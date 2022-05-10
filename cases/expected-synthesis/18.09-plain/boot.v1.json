@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "label": "NixOS 18.09.2574.a7e559a5504 (Linux 4.14.118)",
-  "kernel": "/nix/store/kj3w4v7nbjhd3d501kqpd17zspn7wh7l-linux-4.14.118/bzImage",
+  "label": "NixOS 18.09pre-git (Linux 4.14.74)",
+  "kernel": "/nix/store/s1kjv7xs8gaqw2mfhga0yppyl7k78jnf-linux-4.14.74/bzImage",
   "kernelParams": [
     "loglevel=4"
   ],
-  "init": "/nix/store/72hz5jbhz5cz6zdsbc3c93j8ch48svmp-nixos-system-nixos-18.09.2574.a7e559a5504/init",
-  "initrd": "/nix/store/2y52wyp8i1586r0vcjwnawrcyqhvazkb-initrd/initrd",
-  "initrdSecrets": "/nix/store/72hz5jbhz5cz6zdsbc3c93j8ch48svmp-nixos-system-nixos-18.09.2574.a7e559a5504/append-initrd-secrets",
+  "init": "/nix/store/b96sr7vmv90wxfjfk2d7icxh7d77a1na-nixos-system-nixos-18.09pre-git/init",
+  "initrd": "/nix/store/2ib32agl00qy7sf7ka5sdbrl6kg4b9gi-initrd/initrd",
+  "initrdSecrets": "/nix/store/b96sr7vmv90wxfjfk2d7icxh7d77a1na-nixos-system-nixos-18.09pre-git/append-initrd-secrets",
   "specialisation": {},
-  "toplevel": "/nix/store/72hz5jbhz5cz6zdsbc3c93j8ch48svmp-nixos-system-nixos-18.09.2574.a7e559a5504"
+  "toplevel": "/nix/store/b96sr7vmv90wxfjfk2d7icxh7d77a1na-nixos-system-nixos-18.09pre-git"
 }

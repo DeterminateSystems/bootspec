@@ -1,5 +1,8 @@
 let
-  src = builtins.fetchTarball "channel:nixos-19.09";
+  src = builtins.fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/19.09.tar.gz";
+    sha256 = "sha256:0mhqhq21y5vrr1f30qd2bvydv4bbbslvyzclhw0kdxmkgg3z4c92";
+  };
 in
 (import "${src}/nixos" {
   configuration = {

@@ -1,5 +1,8 @@
 let
-  src = builtins.fetchTarball "channel:nixos-15.09";
+  src = builtins.fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/15.09.tar.gz";
+    sha256 = "sha256:0pn142js99ncn7f53bw7hcp99ldjzb2m7xhjrax00xp72zswzv2n";
+  };
 in
 (import "${src}/nixos" {
   configuration = {
@@ -8,4 +11,3 @@ in
     ];
   };
 }).config.system.build.toplevel
-
