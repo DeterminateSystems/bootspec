@@ -5,7 +5,7 @@ consumed in any tool that conforms to the specification. This tool is mostly
 useful for creating a bootspec on generations realised prior to the
 implementation of the bootspec in NixOS.
 
-(TODO: link to bootspec RFC once submitted)
+See: https://github.com/NixOS/rfcs/pull/125
 
 ## Usage
 
