@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use bootspec::{
     BootJson, BootSpecPath, SpecialisationDescription, SpecialisationName, SystemConfigurationRoot,
@@ -95,7 +95,12 @@ fn describe_system(generation: &Path) -> Result<BootJson> {
     let initrd = fs::canonicalize(generation.join("initrd"))
         .map_err(|e| format!("Failed to canonicalize the initrd:\n{}", e))?;
 
-    let initrd_secrets = Some(generation.join("append-initrd-secrets"));
+    let initrd_secrets: Option<PathBuf>;
+    if generation.join("append-initrd-secrets").exists() {
+        initrd_secrets = Some(generation.join("append-initrd-secrets"));
+    } else {
+        initrd_secrets = None;
+    }
 
     let specialisation: HashMap<SpecialisationName, SpecialisationDescription> = HashMap::new();
 

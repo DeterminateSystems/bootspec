@@ -7,7 +7,7 @@
   ],
   "init": "/nix/store/jfwlp9s434kijn4i53fr5pvrryzspwc4-nixos-system-nixos-16.09pre-git/init",
   "initrd": "/nix/store/rv6i771w5z01z1xvylxhymp5pw44wc6j-initrd/initrd",
-  "initrdSecrets": "/nix/store/jfwlp9s434kijn4i53fr5pvrryzspwc4-nixos-system-nixos-16.09pre-git/append-initrd-secrets",
+  "initrdSecrets": null,
   "specialisation": {},
   "toplevel": "/nix/store/jfwlp9s434kijn4i53fr5pvrryzspwc4-nixos-system-nixos-16.09pre-git"
 }
