@@ -1,4 +1,4 @@
 /target
 result*
-cases/builds
-cases/generated-synthesis
+synthesize/integration-test-cases/builds
+synthesize/integration-test-cases/generated-synthesis
