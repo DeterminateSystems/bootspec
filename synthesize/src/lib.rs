@@ -17,7 +17,7 @@ pub type Result<T, E = Box<dyn Error + Send + Sync + 'static>> = core::result::R
 pub fn synthesize_schema_from_generation(generation: &Path, out_path: &Path) -> Result<()> {
     fs::create_dir(&out_path)?;
     let specialisationdir = out_path.join("specialisation");
-    fs::create_dir(&specialisationdir)?;
+    let mut specialisationdir_created = false;
 
     let mut toplevelspec = describe_system(&generation)?;
 
@@ -33,6 +33,10 @@ pub fn synthesize_schema_from_generation(generation: &Path, out_path: &Path) -> 
 
             let mut boot_json_path = toplevel.join(JSON_FILENAME);
             if !boot_json_path.exists() {
+                if !specialisationdir_created {
+                    fs::create_dir(&specialisationdir)?;
+                    specialisationdir_created = true;
+                }
                 let specname = specialisationdir.join(format!("{}.json", name));
                 let subspec = describe_system(&toplevel)?;
                 let pretty = serde_json::to_string_pretty(&subspec)
