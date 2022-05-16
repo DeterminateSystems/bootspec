@@ -96,7 +96,7 @@ fn describe_system(generation: &Path) -> Result<BootJson> {
 
     let kernel_params: Vec<String> = fs::read_to_string(generation.join("kernel-params"))?
         .split(' ')
-        .map(|e| e.to_string())
+        .map(str::to_string)
         .collect();
 
     let init = generation.join("init");
