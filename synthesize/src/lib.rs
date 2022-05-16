@@ -111,8 +111,6 @@ fn describe_system(generation: &Path) -> Result<BootJson> {
         initrd_secrets = None;
     }
 
-    let specialisation: HashMap<SpecialisationName, SpecialisationDescription> = HashMap::new();
-
     Ok(BootJson {
         schema_version: SCHEMA_VERSION,
         label: format!("NixOS {} (Linux {})", system_version, kernel_version),
@@ -122,7 +120,7 @@ fn describe_system(generation: &Path) -> Result<BootJson> {
         initrd,
         initrd_secrets,
         toplevel: SystemConfigurationRoot(generation),
-        specialisation,
+        specialisation: HashMap::new(),
     })
 }
 
