@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use bootspec::{
     BootJson, BootSpecPath, SpecialisationDescription, SpecialisationName, SystemConfigurationRoot,
@@ -50,7 +50,7 @@ pub fn synthesize_schema_from_generation(generation: &Path, out_path: &Path) -> 
                     })?;
 
                     specname
-                },
+                }
             };
             toplevelspec.specialisation.insert(
                 SpecialisationName(name.to_string()),
@@ -108,7 +108,7 @@ fn describe_system(generation: &Path) -> Result<BootJson> {
         Some(generation.join("append-initrd-secrets"))
     } else {
         None
-    }
+    };
 
     Ok(BootJson {
         schema_version: SCHEMA_VERSION,
