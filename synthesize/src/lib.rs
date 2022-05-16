@@ -31,22 +31,27 @@ pub fn synthesize_schema_from_generation(generation: &Path, out_path: &Path) -> 
                 .ok_or("Specialisation dir name was invalid UTF8")?;
             let toplevel = fs::canonicalize(generation.join(format!("specialisation/{}", name)))?;
 
-            let mut boot_json_path = toplevel.join(JSON_FILENAME);
-            if !boot_json_path.exists() {
-                if !specialisationdir_created {
-                    fs::create_dir(&specialisationdir)?;
-                    specialisationdir_created = true;
-                }
-                let specname = specialisationdir.join(format!("{}.json", name));
-                let subspec = describe_system(&toplevel)?;
-                let pretty = serde_json::to_string_pretty(&subspec)
-                    .map_err(|e| format!("Failed to make pretty JSON from bootspec:\n{}", e))?;
+            let boot_json_path = toplevel.join(JSON_FILENAME);
+            let boot_json_path = match boot_json_path.exists() {
+                true => boot_json_path,
+                false => {
+                    if !specialisationdir_created {
+                        fs::create_dir(&specialisationdir)?;
+                        specialisationdir_created = true;
+                    }
 
-                fs::write(&specname, pretty).map_err(|e| {
-                    format!("Failed to write JSON to '{}':\n{}", out_path.display(), e)
-                })?;
-                boot_json_path = specname;
-            }
+                    let specname = specialisationdir.join(format!("{name}.json"));
+                    let subspec = describe_system(&toplevel)?;
+                    let pretty = serde_json::to_string_pretty(&subspec)
+                        .map_err(|e| format!("Failed to make pretty JSON from bootspec:\n{e}"))?;
+
+                    fs::write(&specname, pretty).map_err(|e| {
+                        format!("Failed to write JSON to '{}':\n{e}", out_path.display())
+                    })?;
+
+                    specname
+                },
+            };
             toplevelspec.specialisation.insert(
                 SpecialisationName(name.to_string()),
                 SpecialisationDescription {
