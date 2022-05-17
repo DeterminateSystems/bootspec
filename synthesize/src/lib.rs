@@ -12,7 +12,7 @@ pub type Result<T, E = Box<dyn Error + Send + Sync + 'static>> = core::result::R
 ///
 /// This is useful when used on generations that do not have a bootspec attached to it.
 pub fn synthesize_schema_from_generation(generation: &Path) -> Result<BootJson> {
-    let mut toplevelspec = describe_system(&generation)?;
+    let mut toplevelspec = describe_system(generation)?;
 
     if let Ok(specialisations) = fs::read_dir(generation.join("specialisation")) {
         for spec in specialisations.map(|res| res.map(|e| e.path())) {
