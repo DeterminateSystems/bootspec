@@ -46,7 +46,7 @@ fn cli() -> Result<()> {
     let pretty = serde_json::to_string_pretty(&spec)
         .map_err(|e| format!("Failed to make pretty JSON from bootspec:\n{}", e))?;
 
-    fs::write(&out_path.join("boot.v1.json"), pretty)
+    fs::write(&out_path, pretty)
         .map_err(|e| format!("Failed to write JSON to '{}':\n{}", out_path.display(), e))?;
 
     Ok(())
