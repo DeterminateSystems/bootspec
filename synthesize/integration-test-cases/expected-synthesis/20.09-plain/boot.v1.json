@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "label": "NixOS 20.09pre-git (Linux 5.4.72)",
+  "kernel": "/nix/store/ysrwgw1wp9ha0484dh8q1awysn9vfxdy-linux-5.4.72/bzImage",
+  "kernelParams": [
+    "loglevel=4",
+    "net.ifnames=0"
+  ],
+  "init": "/nix/store/6621qzx8dlvwgpjjs1sarw9lxv4x38ps-nixos-system-nixos-20.09pre-git/init",
+  "initrd": "/nix/store/r7ifs7qvxb5fdz7hhjh5m8a65k34ik25-initrd-linux-5.4.72/initrd",
+  "initrdSecrets": "/nix/store/6621qzx8dlvwgpjjs1sarw9lxv4x38ps-nixos-system-nixos-20.09pre-git/append-initrd-secrets",
+  "specialisation": {},
+  "toplevel": "/nix/store/6621qzx8dlvwgpjjs1sarw9lxv4x38ps-nixos-system-nixos-20.09pre-git"
+}
