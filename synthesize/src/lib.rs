@@ -3,10 +3,7 @@ use std::error::Error;
 use std::fs;
 use std::path::Path;
 
-use bootspec::{
-    BootJson, BootSpecPath, SpecialisationDescription, SpecialisationName, SystemConfigurationRoot,
-    JSON_FILENAME, SCHEMA_VERSION,
-};
+use bootspec::{BootJson, SpecialisationName, SystemConfigurationRoot, SCHEMA_VERSION};
 
 #[doc(hidden)]
 pub type Result<T, E = Box<dyn Error + Send + Sync + 'static>> = core::result::Result<T, E>;
@@ -14,11 +11,7 @@ pub type Result<T, E = Box<dyn Error + Send + Sync + 'static>> = core::result::R
 /// Synthesize a [`BootJson`] struct from the path to a generation.
 ///
 /// This is useful when used on generations that do not have a bootspec attached to it.
-pub fn synthesize_schema_from_generation(generation: &Path, out_path: &Path) -> Result<()> {
-    fs::create_dir(&out_path)?;
-    let specialisationdir = out_path.join("specialisation");
-    let mut specialisationdir_created = false;
-
+pub fn synthesize_schema_from_generation(generation: &Path) -> Result<BootJson> {
     let mut toplevelspec = describe_system(&generation)?;
 
     if let Ok(specialisations) = fs::read_dir(generation.join("specialisation")) {
@@ -31,43 +24,14 @@ pub fn synthesize_schema_from_generation(generation: &Path, out_path: &Path) -> 
                 .ok_or("Specialisation dir name was invalid UTF8")?;
             let toplevel = fs::canonicalize(generation.join(format!("specialisation/{}", name)))?;
 
-            let boot_json_path = toplevel.join(JSON_FILENAME);
-            let boot_json_path = match boot_json_path.exists() {
-                true => boot_json_path,
-                false => {
-                    if !specialisationdir_created {
-                        fs::create_dir(&specialisationdir)?;
-                        specialisationdir_created = true;
-                    }
-
-                    let specname = specialisationdir.join(format!("{name}.json"));
-                    let subspec = describe_system(&toplevel)?;
-                    let pretty = serde_json::to_string_pretty(&subspec)
-                        .map_err(|e| format!("Failed to make pretty JSON from bootspec:\n{e}"))?;
-
-                    fs::write(&specname, pretty).map_err(|e| {
-                        format!("Failed to write JSON to '{}':\n{e}", out_path.display())
-                    })?;
-
-                    specname
-                }
-            };
             toplevelspec.specialisation.insert(
                 SpecialisationName(name.to_string()),
-                SpecialisationDescription {
-                    bootspec: BootSpecPath(boot_json_path),
-                },
+                describe_system(&toplevel)?,
             );
         }
     }
 
-    let pretty = serde_json::to_string_pretty(&toplevelspec)
-        .map_err(|e| format!("Failed to make pretty JSON from bootspec:\n{}", e))?;
-
-    fs::write(&out_path.join("boot.v1.json"), pretty)
-        .map_err(|e| format!("Failed to write JSON to '{}':\n{}", out_path.display(), e))?;
-
-    Ok(())
+    Ok(toplevelspec)
 }
 
 fn describe_system(generation: &Path) -> Result<BootJson> {

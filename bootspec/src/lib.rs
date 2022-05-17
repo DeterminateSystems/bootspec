@@ -12,17 +12,6 @@ pub struct SpecialisationName(pub String);
 /// A wrapper type describing the root directory of a NixOS system configuration.
 pub struct SystemConfigurationRoot(pub PathBuf);
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
-/// A wrapper type describing the path to the bootspec schema file.
-pub struct BootSpecPath(pub PathBuf);
-
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
-/// Provides the information necessary to consume a specialisation with or without a bootspec.
-pub struct SpecialisationDescription {
-    /// The optional path to the specialisation's bootspec.
-    pub bootspec: BootSpecPath,
-}
-
 // !!! IMPORTANT: KEEP `BootJson`, `SCHEMA_VERSION`, and `JSON_FILENAME` IN SYNC !!!
 /// The current bootspec schema.
 pub type BootJson = v1::BootJsonV1;
