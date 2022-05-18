@@ -22,7 +22,7 @@ pub fn synthesize_schema_from_generation(generation: &Path) -> Result<BootJson> 
                 .ok_or("Could not get name of specialisation dir")?
                 .to_str()
                 .ok_or("Specialisation dir name was invalid UTF8")?;
-            let toplevel = fs::canonicalize(generation.join(format!("specialisation/{}", name)))?;
+            let toplevel = fs::canonicalize(generation.join("specialisation").join(name))?;
 
             toplevelspec.specialisation.insert(
                 SpecialisationName(name.to_string()),
