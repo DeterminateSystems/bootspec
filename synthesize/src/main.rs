@@ -1,3 +1,4 @@
+use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
 
@@ -34,13 +35,19 @@ fn cli() -> Result<()> {
         .ok_or("Expected output path, got none.")?
         .parse::<PathBuf>()?;
 
-    synthesize::synthesize_schema_from_generation(&generation_dir, &out_path).map_err(|e| {
+    let spec = synthesize::synthesize_schema_from_generation(&generation_dir).map_err(|e| {
         format!(
             "Failed to synthesize bootspec for {}:\n{}",
             generation_dir.display(),
             e
         )
     })?;
+
+    let pretty = serde_json::to_string_pretty(&spec)
+        .map_err(|e| format!("Failed to make pretty JSON from bootspec:\n{}", e))?;
+
+    fs::write(&out_path, pretty)
+        .map_err(|e| format!("Failed to write JSON to '{}':\n{}", out_path.display(), e))?;
 
     Ok(())
 }

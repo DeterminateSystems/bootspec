@@ -12,7 +12,7 @@ done) | xargs --max-procs=$(nproc) --max-lines=1 nix-build
 rm -rf generated-synthesis
 mkdir generated-synthesis
 for out in ./builds/*; do
-    cargo run --bin synthesize -- "$out" "./generated-synthesis/$(basename "$out")"
+    cargo run --bin synthesize -- "$out" "./generated-synthesis/$(basename "$out").json"
 done
 
 diff -r ./expected-synthesis ./generated-synthesis

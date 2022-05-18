@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{SpecialisationDescription, SpecialisationName, SystemConfigurationRoot};
+use crate::{SpecialisationName, SystemConfigurationRoot};
 
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u32 = 1;
@@ -29,7 +29,7 @@ pub struct BootJsonV1 {
     /// Path to "append-initrd-secrets" script -- $toplevel/append-initrd-secrets
     pub initrd_secrets: Option<PathBuf>,
     /// Mapping of specialisation names to their boot.json
-    pub specialisation: HashMap<SpecialisationName, SpecialisationDescription>,
+    pub specialisation: HashMap<SpecialisationName, BootJsonV1>,
     /// config.system.build.toplevel path
     pub toplevel: SystemConfigurationRoot,
 }
