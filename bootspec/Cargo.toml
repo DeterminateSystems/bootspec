@@ -7,3 +7,6 @@ edition = "2018"
 
 [dependencies]
 serde = { version = "1.0.136", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = "3.3.0"
