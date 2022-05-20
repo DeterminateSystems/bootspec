@@ -16,8 +16,9 @@ pub const JSON_FILENAME: &str = "boot.v1.json";
 #[serde(rename_all = "camelCase")]
 /// V1 of the bootspec schema.
 pub struct GenerationV1 {
-    /// The version of the boot.json schema
-    pub schema_version: u32,
+    /// The version of the boot.json schema. Must be 1.
+    schema_version: u32,
+
     /// Label for the system closure
     pub label: String,
     /// Path to kernel (bzImage) -- $toplevel/kernel
@@ -36,83 +37,85 @@ pub struct GenerationV1 {
     pub toplevel: SystemConfigurationRoot,
 }
 
-/// Synthesize a [`GenerationV1`] struct from the path to a generation.
-///
-/// This is useful when used on generations that do not have a bootspec attached to it.
-pub fn synthesize(generation: &Path) -> Result<GenerationV1> {
-    let mut toplevelspec = describe_system(generation)?;
+impl GenerationV1 {
+    /// Synthesize a [`GenerationV1`] struct from the path to a generation.
+    ///
+    /// This is useful when used on generations that do not have a bootspec attached to it.
+    pub fn synthesize(generation: &Path) -> Result<GenerationV1> {
+        let mut toplevelspec = GenerationV1::describe_system(generation)?;
 
-    if let Ok(specialisations) = fs::read_dir(generation.join("specialisation")) {
-        for spec in specialisations.map(|res| res.map(|e| e.path())) {
-            let spec = spec?;
-            let name = spec
-                .file_name()
-                .ok_or("Could not get name of specialisation dir")?
-                .to_str()
-                .ok_or("Specialisation dir name was invalid UTF8")?;
-            let toplevel = fs::canonicalize(generation.join("specialisation").join(name))?;
+        if let Ok(specialisations) = fs::read_dir(generation.join("specialisation")) {
+            for spec in specialisations.map(|res| res.map(|e| e.path())) {
+                let spec = spec?;
+                let name = spec
+                    .file_name()
+                    .ok_or("Could not get name of specialisation dir")?
+                    .to_str()
+                    .ok_or("Specialisation dir name was invalid UTF8")?;
+                let toplevel = fs::canonicalize(generation.join("specialisation").join(name))?;
 
-            toplevelspec.specialisation.insert(
-                SpecialisationName(name.to_string()),
-                describe_system(&toplevel)?,
-            );
+                toplevelspec.specialisation.insert(
+                    SpecialisationName(name.to_string()),
+                    GenerationV1::describe_system(&toplevel)?,
+                );
+            }
         }
+
+        Ok(toplevelspec)
     }
 
-    Ok(toplevelspec)
-}
+    fn describe_system(generation: &Path) -> Result<GenerationV1> {
+        let generation = generation
+            .canonicalize()
+            .map_err(|e| format!("Failed to canonicalize generation dir:\n{}", e))?;
 
-fn describe_system(generation: &Path) -> Result<GenerationV1> {
-    let generation = generation
-        .canonicalize()
-        .map_err(|e| format!("Failed to canonicalize generation dir:\n{}", e))?;
+        let system_version = fs::read_to_string(generation.join("nixos-version"))
+            .map_err(|e| format!("Failed to read system version:\n{}", e))?;
 
-    let system_version = fs::read_to_string(generation.join("nixos-version"))
-        .map_err(|e| format!("Failed to read system version:\n{}", e))?;
+        let kernel = fs::canonicalize(generation.join("kernel-modules/bzImage"))
+            .map_err(|e| format!("Failed to canonicalize the kernel:\n{}", e))?;
 
-    let kernel = fs::canonicalize(generation.join("kernel-modules/bzImage"))
-        .map_err(|e| format!("Failed to canonicalize the kernel:\n{}", e))?;
+        let kernel_modules = fs::canonicalize(generation.join("kernel-modules/lib/modules"))
+            .map_err(|e| format!("Failed to canonicalize the kernel modules dir:\n{}", e))?;
+        let versioned_kernel_modules = fs::read_dir(kernel_modules)
+            .map_err(|e| format!("Failed to read kernel modules dir:\n{}", e))?
+            .map(|res| res.map(|e| e.path()))
+            .next()
+            .ok_or("Could not find kernel version dir")??;
+        let kernel_version = versioned_kernel_modules
+            .file_name()
+            .ok_or("Could not get name of kernel version dir")?
+            .to_str()
+            .ok_or("Kernel version dir name was invalid UTF8")?;
 
-    let kernel_modules = fs::canonicalize(generation.join("kernel-modules/lib/modules"))
-        .map_err(|e| format!("Failed to canonicalize the kernel modules dir:\n{}", e))?;
-    let versioned_kernel_modules = fs::read_dir(kernel_modules)
-        .map_err(|e| format!("Failed to read kernel modules dir:\n{}", e))?
-        .map(|res| res.map(|e| e.path()))
-        .next()
-        .ok_or("Could not find kernel version dir")??;
-    let kernel_version = versioned_kernel_modules
-        .file_name()
-        .ok_or("Could not get name of kernel version dir")?
-        .to_str()
-        .ok_or("Kernel version dir name was invalid UTF8")?;
+        let kernel_params: Vec<String> = fs::read_to_string(generation.join("kernel-params"))?
+            .split(' ')
+            .map(str::to_string)
+            .collect();
 
-    let kernel_params: Vec<String> = fs::read_to_string(generation.join("kernel-params"))?
-        .split(' ')
-        .map(str::to_string)
-        .collect();
+        let init = generation.join("init");
 
-    let init = generation.join("init");
+        let initrd = fs::canonicalize(generation.join("initrd"))
+            .map_err(|e| format!("Failed to canonicalize the initrd:\n{}", e))?;
 
-    let initrd = fs::canonicalize(generation.join("initrd"))
-        .map_err(|e| format!("Failed to canonicalize the initrd:\n{}", e))?;
+        let initrd_secrets = if generation.join("append-initrd-secrets").exists() {
+            Some(generation.join("append-initrd-secrets"))
+        } else {
+            None
+        };
 
-    let initrd_secrets = if generation.join("append-initrd-secrets").exists() {
-        Some(generation.join("append-initrd-secrets"))
-    } else {
-        None
-    };
-
-    Ok(GenerationV1 {
-        schema_version: SCHEMA_VERSION,
-        label: format!("NixOS {} (Linux {})", system_version, kernel_version),
-        kernel,
-        kernel_params,
-        init,
-        initrd,
-        initrd_secrets,
-        toplevel: SystemConfigurationRoot(generation),
-        specialisation: HashMap::new(),
-    })
+        Ok(GenerationV1 {
+            schema_version: SCHEMA_VERSION,
+            label: format!("NixOS {} (Linux {})", system_version, kernel_version),
+            kernel,
+            kernel_params,
+            init,
+            initrd,
+            initrd_secrets,
+            toplevel: SystemConfigurationRoot(generation),
+            specialisation: HashMap::new(),
+        })
+    }
 }
 
 #[cfg(test)]
@@ -122,8 +125,6 @@ mod tests {
 
     use super::{GenerationV1, SystemConfigurationRoot, JSON_FILENAME, SCHEMA_VERSION};
     use tempfile::TempDir;
-
-    use super::describe_system;
 
     fn scaffold(
         system_version: &str,
@@ -139,6 +140,8 @@ mod tests {
             .expect("Failed to write to test generation");
         fs::create_dir_all(generation.join("specialisation"))
             .expect("Failed to write to test generation");
+        fs::create_dir_all(generation.join("bootspec"))
+            .expect("Failed to create the bootspec directory during test scaffolding");
 
         fs::write(generation.join("nixos-version"), system_version)
             .expect("Failed to write to test generation");
@@ -191,7 +194,7 @@ mod tests {
             None,
             false,
         );
-        let spec = describe_system(&generation).unwrap();
+        let spec = GenerationV1::synthesize(&generation).unwrap();
 
         assert_eq!(
             spec,
@@ -231,7 +234,7 @@ mod tests {
             false,
         );
 
-        describe_system(&generation).unwrap();
+        GenerationV1::synthesize(&generation).unwrap();
     }
 
     #[test]
@@ -257,7 +260,7 @@ mod tests {
 
         fs::write(generation.join(JSON_FILENAME), "").expect("Failed to write to test generation");
 
-        let spec = describe_system(&generation).unwrap();
+        let spec = GenerationV1::synthesize(&generation).unwrap();
 
         assert_eq!(
             spec,
@@ -297,8 +300,9 @@ mod tests {
             true,
         );
 
-        fs::write(generation.join(JSON_FILENAME), "").expect("Failed to write to test generation");
+        fs::write(generation.join("bootspec").join(JSON_FILENAME), "")
+            .expect("Failed to write to test generation");
 
-        describe_system(&generation).unwrap();
+        GenerationV1::synthesize(&generation).unwrap();
     }
 }

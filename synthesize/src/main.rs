@@ -2,7 +2,8 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
 
-use synthesize::Result;
+use bootspec::v1::GenerationV1;
+use bootspec::Result;
 
 fn main() -> Result<()> {
     if let Err(e) = self::cli() {
@@ -35,7 +36,7 @@ fn cli() -> Result<()> {
         .ok_or("Expected output path, got none.")?
         .parse::<PathBuf>()?;
 
-    let spec = synthesize::synthesize_schema_from_generation(&generation_dir).map_err(|e| {
+    let spec = GenerationV1::synthesize(&generation_dir).map_err(|e| {
         format!(
             "Failed to synthesize bootspec for {}:\n{}",
             generation_dir.display(),
