@@ -126,6 +126,33 @@ mod tests {
     use super::{GenerationV1, SystemConfigurationRoot, JSON_FILENAME, SCHEMA_VERSION};
     use tempfile::TempDir;
 
+    fn create_generation_files_and_dirs(
+        generation: &PathBuf,
+        kernel_version: &str,
+        system_version: &str,
+        kernel_params: &Vec<String>,
+    ) {
+        fs::create_dir_all(
+            generation.join(format!("kernel-modules/lib/modules/{}", kernel_version)),
+        )
+        .expect("Failed to write to test generation");
+        fs::create_dir_all(generation.join("specialisation"))
+            .expect("Failed to write to test generation");
+        fs::create_dir_all(generation.join("bootspec"))
+            .expect("Failed to create the bootspec directory during test scaffolding");
+
+        fs::write(generation.join("nixos-version"), system_version)
+            .expect("Failed to write to test generation");
+        fs::write(generation.join("kernel-modules/bzImage"), "")
+            .expect("Failed to write to test generation");
+        fs::write(generation.join("kernel-params"), kernel_params.join(" "))
+            .expect("Failed to write to test generation");
+        fs::write(generation.join("init"), "").expect("Failed to write to test generation");
+        fs::write(generation.join("initrd"), "").expect("Failed to write to test generation");
+        fs::write(generation.join("append-initrd-secrets"), "")
+            .expect("Failed to write to test generation");
+    }
+
     fn scaffold(
         system_version: &str,
         kernel_version: &str,
@@ -136,33 +163,24 @@ mod tests {
         let temp_dir = TempDir::new().expect("Failed to create tempdir for test generation");
         let generation = temp_dir.into_path();
 
-        fs::create_dir_all(generation.join("kernel-modules/lib/modules"))
-            .expect("Failed to write to test generation");
-        fs::create_dir_all(generation.join("specialisation"))
-            .expect("Failed to write to test generation");
-        fs::create_dir_all(generation.join("bootspec"))
-            .expect("Failed to create the bootspec directory during test scaffolding");
-
-        fs::write(generation.join("nixos-version"), system_version)
-            .expect("Failed to write to test generation");
-        fs::write(generation.join("kernel-modules/bzImage"), "")
-            .expect("Failed to write to test generation");
-        fs::write(
-            generation.join(format!("kernel-modules/lib/modules/{}", kernel_version)),
-            "",
-        )
-        .expect("Failed to write to test generation");
-        fs::write(generation.join("kernel-params"), kernel_params.join(" "))
-            .expect("Failed to write to test generation");
-        fs::write(generation.join("init"), "").expect("Failed to write to test generation");
-        fs::write(generation.join("initrd"), "").expect("Failed to write to test generation");
-        fs::write(generation.join("append-initrd-secrets"), "")
-            .expect("Failed to write to test generation");
+        create_generation_files_and_dirs(
+            &generation,
+            kernel_version,
+            system_version,
+            kernel_params,
+        );
 
         if let Some(specialisations) = specialisations {
             for spec_name in specialisations {
                 let spec_path = generation.join("specialisation").join(spec_name);
                 fs::create_dir_all(&spec_path).expect("Failed to write to test generation");
+
+                create_generation_files_and_dirs(
+                    &spec_path,
+                    kernel_version,
+                    system_version,
+                    kernel_params,
+                );
 
                 if specialisations_have_boot_spec {
                     fs::write(spec_path.join(JSON_FILENAME), "")
