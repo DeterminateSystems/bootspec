@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+pub mod generation;
 pub mod v1;
 
 #[doc(hidden)]
@@ -20,6 +21,6 @@ pub struct SystemConfigurationRoot(pub PathBuf);
 /// The current bootspec schema.
 pub type BootJson = v1::GenerationV1;
 /// The current bootspec schema version.
-pub const SCHEMA_VERSION: u32 = v1::SCHEMA_VERSION;
+pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
 /// The current bootspec schema filename.
 pub const JSON_FILENAME: &str = v1::JSON_FILENAME;
