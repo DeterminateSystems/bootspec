@@ -1,4 +1,5 @@
-use serde::de::Error;
+use serde::de::Error as _;
+use serde::ser::Error as _;
 use serde::{Deserialize, Serialize};
 
 use crate::v1;
@@ -23,23 +24,17 @@ impl Serialize for Generation {
         S: serde::Serializer,
     {
         #[derive(Serialize)]
-        #[serde(untagged)]
-        enum Generation_<'a> {
-            V1(&'a v1::GenerationV1),
-        }
-
-        #[derive(Serialize)]
-        struct TypedGeneration<'a> {
+        struct TypedGeneration {
             #[serde(rename = "schemaVersion")]
             v: u64,
             #[serde(flatten)]
-            msg: Generation_<'a>,
+            msg: serde_json::Value,
         }
 
         let msg = match self {
             Generation::V1(gen) => TypedGeneration {
                 v: v1::SCHEMA_VERSION,
-                msg: Generation_::V1(gen),
+                msg: serde_json::to_value(gen).map_err(S::Error::custom)?,
             },
         };
 
