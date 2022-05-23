@@ -10,5 +10,7 @@ See: https://github.com/NixOS/rfcs/pull/125
 ## Usage
 
 ```terminal
-$ synthesize /path/to/generation boot.json
+$ synthesize /path/to/generation boot.json --version $bootspec_version
 ```
+
+where `$bootspec_version` is a number referring to the bootspec version you want to synthesize.

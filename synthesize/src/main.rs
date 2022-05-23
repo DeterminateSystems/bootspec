@@ -3,8 +3,16 @@ use std::io::{self, Write};
 use std::path::PathBuf;
 
 use bootspec::generation::Generation;
-use bootspec::v1::GenerationV1;
+use bootspec::v1;
 use bootspec::Result;
+
+#[derive(clap::Parser)]
+struct Cli {
+    generation_dir: PathBuf,
+    out_path: PathBuf,
+    #[clap(long)]
+    version: u64,
+}
 
 fn main() -> Result<()> {
     if let Err(e) = self::cli() {
@@ -17,35 +25,27 @@ fn main() -> Result<()> {
 }
 
 fn cli() -> Result<()> {
-    let mut args = std::env::args().skip(1);
+    let args: Cli = clap::Parser::parse();
+    let generation_dir = args.generation_dir;
+    let out_path = args.out_path;
+    let version = args.version;
 
-    if args.len() != 2 {
-        writeln!(
-            io::stderr(),
-            "Usage: synthesize <generation_dir> <out_path>"
-        )?;
+    let versioned_spec = match version {
+        v1::SCHEMA_VERSION => {
+            let spec = v1::GenerationV1::synthesize(&generation_dir).map_err(|e| {
+                format!(
+                    "Failed to synthesize v{} bootspec for {}:\n{}",
+                    version,
+                    generation_dir.display(),
+                    e
+                )
+            })?;
 
-        std::process::exit(1);
-    }
+            Generation::V1(spec)
+        }
+        v => return Err(format!("Cannot synthesize for unsupported schema version {}", v).into()),
+    };
 
-    let generation_dir = args
-        .next()
-        .ok_or("Expected path to generation, got none.")?
-        .parse::<PathBuf>()?;
-    let out_path = args
-        .next()
-        .ok_or("Expected output path, got none.")?
-        .parse::<PathBuf>()?;
-
-    let spec = GenerationV1::synthesize(&generation_dir).map_err(|e| {
-        format!(
-            "Failed to synthesize bootspec for {}:\n{}",
-            generation_dir.display(),
-            e
-        )
-    })?;
-
-    let versioned_spec = Generation::V1(spec);
     let pretty = serde_json::to_string_pretty(&versioned_spec)
         .map_err(|e| format!("Failed to make pretty JSON from bootspec:\n{}", e))?;
 
