@@ -1,11 +1,9 @@
-use serde::de::Error as _;
-use serde::ser::Error as _;
 use serde::{Deserialize, Serialize};
 
 use crate::v1;
-use crate::Result;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
 #[non_exhaustive]
 /// An enum of all available bootspec versions.
 ///
@@ -29,60 +27,6 @@ impl Generation {
     }
 }
 
-impl Serialize for Generation {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use Generation::*;
-
-        #[derive(Serialize)]
-        struct TypedGeneration {
-            #[serde(rename = "schemaVersion")]
-            v: u64,
-            #[serde(flatten)]
-            msg: serde_json::Value,
-        }
-
-        let msg = match self {
-            V1(gen) => TypedGeneration {
-                v: v1::SCHEMA_VERSION,
-                msg: serde_json::to_value(gen).map_err(S::Error::custom)?,
-            },
-        };
-
-        msg.serialize(serializer)
-    }
-}
-
-impl<'de> Deserialize<'de> for Generation {
-    fn deserialize<D>(d: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        use serde_json::Value;
-
-        let value = Value::deserialize(d)?;
-
-        let gen = match value.get("schemaVersion").and_then(Value::as_u64) {
-            Some(v1::SCHEMA_VERSION) => {
-                let v1 = v1::GenerationV1::deserialize(value).map_err(D::Error::custom)?;
-
-                Generation::V1(v1)
-            }
-            Some(ty) => {
-                return Err(D::Error::custom(format!(
-                    "unsupported schema version {}",
-                    ty
-                )))
-            }
-            None => return Err(D::Error::custom("missing / invalid schema version")),
-        };
-
-        Ok(gen)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
@@ -93,26 +37,27 @@ mod tests {
     use crate::SCHEMA_VERSION;
 
     #[test]
-    fn valid_json() {
+    fn valid_v1_json() {
         let json = r#"{
-    "schemaVersion": 1,
-    "init": "/nix/store/xxx-nixos-system-xxx/init",
-    "initrd": "/nix/store/xxx-initrd-linux/initrd",
-    "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
-    "kernel": "/nix/store/xxx-linux/bzImage",
-    "kernelParams": [
-    "amd_iommu=on",
-    "amd_iommu=pt",
-    "iommu=pt",
-    "kvm.ignore_msrs=1",
-    "kvm.report_ignored_msrs=0",
-    "udev.log_priority=3",
-    "systemd.unified_cgroup_hierarchy=1",
-    "loglevel=4"
-    ],
-    "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-    "toplevel": "/nix/store/xxx-nixos-system-xxx",
-    "specialisation": {}
+    "v1": {
+        "init": "/nix/store/xxx-nixos-system-xxx/init",
+        "initrd": "/nix/store/xxx-initrd-linux/initrd",
+        "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
+        "kernel": "/nix/store/xxx-linux/bzImage",
+        "kernelParams": [
+            "amd_iommu=on",
+            "amd_iommu=pt",
+            "iommu=pt",
+            "kvm.ignore_msrs=1",
+            "kvm.report_ignored_msrs=0",
+            "udev.log_priority=3",
+            "systemd.unified_cgroup_hierarchy=1",
+            "loglevel=4"
+        ],
+        "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx",
+        "specialisation": {}
+    }
 }"#;
 
         let from_json: Generation = serde_json::from_str(&json).unwrap();
@@ -147,61 +92,33 @@ mod tests {
     }
 
     #[test]
-    fn invalid_json_missing_version() {
-        let json = r#"{
-    "init": "/nix/store/xxx-nixos-system-xxx/init",
-    "initrd": "/nix/store/xxx-initrd-linux/initrd",
-    "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
-    "kernel": "/nix/store/xxx-linux/bzImage",
-    "kernelParams": [
-    "amd_iommu=on",
-    "amd_iommu=pt",
-    "iommu=pt",
-    "kvm.ignore_msrs=1",
-    "kvm.report_ignored_msrs=0",
-    "udev.log_priority=3",
-    "systemd.unified_cgroup_hierarchy=1",
-    "loglevel=4"
-    ],
-    "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-    "toplevel": "/nix/store/xxx-nixos-system-xxx",
-    "specialisation": {}
-}"#;
-
-        let json_err = serde_json::from_str::<Generation>(&json).unwrap_err();
-        assert_eq!(json_err.to_string(), "missing / invalid schema version");
-    }
-
-    #[test]
     fn invalid_json_invalid_version() {
         let json = format!(
             r#"{{
-    "schemaVersion": {},
-    "init": "/nix/store/xxx-nixos-system-xxx/init",
-    "initrd": "/nix/store/xxx-initrd-linux/initrd",
-    "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
-    "kernel": "/nix/store/xxx-linux/bzImage",
-    "kernelParams": [
-    "amd_iommu=on",
-    "amd_iommu=pt",
-    "iommu=pt",
-    "kvm.ignore_msrs=1",
-    "kvm.report_ignored_msrs=0",
-    "udev.log_priority=3",
-    "systemd.unified_cgroup_hierarchy=1",
-    "loglevel=4"
-    ],
-    "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-    "toplevel": "/nix/store/xxx-nixos-system-xxx",
-    "specialisation": {{}}
+    "v{}": {{
+        "init": "/nix/store/xxx-nixos-system-xxx/init",
+        "initrd": "/nix/store/xxx-initrd-linux/initrd",
+        "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
+        "kernel": "/nix/store/xxx-linux/bzImage",
+        "kernelParams": [
+            "amd_iommu=on",
+            "amd_iommu=pt",
+            "iommu=pt",
+            "kvm.ignore_msrs=1",
+            "kvm.report_ignored_msrs=0",
+            "udev.log_priority=3",
+            "systemd.unified_cgroup_hierarchy=1",
+            "loglevel=4"
+        ],
+        "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx",
+        "specialisation": {{}}
+    }}
 }}"#,
             SCHEMA_VERSION + 1
         );
 
         let json_err = serde_json::from_str::<Generation>(&json).unwrap_err();
-        assert_eq!(
-            json_err.to_string(),
-            format!("unsupported schema version {}", SCHEMA_VERSION + 1)
-        );
+        assert!(json_err.to_string().contains("unknown variant"));
     }
 }

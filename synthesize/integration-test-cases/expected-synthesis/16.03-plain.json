@@ -1,13 +1,14 @@
 {
-  "schemaVersion": 1,
-  "label": "NixOS 16.03pre-git (Linux 4.4.6)",
-  "kernel": "/nix/store/vmsl93kyx72kh03m0h6r2w5ivywbjxm6-linux-4.4.6/bzImage",
-  "kernelParams": [
-    "loglevel=4"
-  ],
-  "init": "/nix/store/k0lfhjxd5znyrqkgrdi3hh7wxr885fcj-nixos-system-nixos-16.03pre-git/init",
-  "initrd": "/nix/store/q1hg158mvnc9bscc22cv45ys484c4g9x-initrd/initrd",
-  "initrdSecrets": null,
-  "specialisation": {},
-  "toplevel": "/nix/store/k0lfhjxd5znyrqkgrdi3hh7wxr885fcj-nixos-system-nixos-16.03pre-git"
+  "v1": {
+    "label": "NixOS 16.03pre-git (Linux 4.4.6)",
+    "kernel": "/nix/store/vmsl93kyx72kh03m0h6r2w5ivywbjxm6-linux-4.4.6/bzImage",
+    "kernelParams": [
+      "loglevel=4"
+    ],
+    "init": "/nix/store/k0lfhjxd5znyrqkgrdi3hh7wxr885fcj-nixos-system-nixos-16.03pre-git/init",
+    "initrd": "/nix/store/q1hg158mvnc9bscc22cv45ys484c4g9x-initrd/initrd",
+    "initrdSecrets": null,
+    "specialisation": {},
+    "toplevel": "/nix/store/k0lfhjxd5znyrqkgrdi3hh7wxr885fcj-nixos-system-nixos-16.03pre-git"
+  }
 }
