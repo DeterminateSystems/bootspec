@@ -16,17 +16,7 @@ fn main() -> Result<()> {
 }
 
 fn cli() -> Result<()> {
-    let mut args = std::env::args().skip(1);
-
-    if args.len() != 1 {
-        writeln!(io::stderr(), "Usage: validate <bootspec_path>")?;
-        std::process::exit(1);
-    }
-
-    let bootspec_path = args
-        .next()
-        .ok_or("Expected path to bootspec document, got none.")?
-        .parse::<PathBuf>()?;
+    let Args { bootspec_path } = parse_args()?;
 
     let contents = fs::read_to_string(&bootspec_path)?;
 
@@ -48,4 +38,24 @@ fn cli() -> Result<()> {
     }
 
     Ok(())
+}
+
+pub struct Args {
+    pub bootspec_path: PathBuf,
+}
+
+fn parse_args() -> Result<Args> {
+    let mut args = std::env::args().skip(1);
+
+    if args.len() != 1 {
+        writeln!(io::stderr(), "Usage: validate <bootspec_path>")?;
+        std::process::exit(1);
+    }
+
+    let bootspec_path = args
+        .next()
+        .ok_or("Expected path to bootspec document, got none.")?
+        .parse::<PathBuf>()?;
+
+    Ok(Args { bootspec_path })
 }
