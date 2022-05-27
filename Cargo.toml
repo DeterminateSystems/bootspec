@@ -2,4 +2,5 @@
 members = [
   "bootspec",
   "synthesize",
+  "validate",
 ]

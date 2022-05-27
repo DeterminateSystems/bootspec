@@ -18,11 +18,24 @@ pub enum Generation {
     V1(v1::GenerationV1),
 }
 
+impl Generation {
+    /// The version of the bootspec document.
+    pub fn version(&self) -> u64 {
+        use Generation::*;
+
+        match self {
+            V1(_) => v1::SCHEMA_VERSION,
+        }
+    }
+}
+
 impl Serialize for Generation {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
+        use Generation::*;
+
         #[derive(Serialize)]
         struct TypedGeneration {
             #[serde(rename = "schemaVersion")]
@@ -32,7 +45,7 @@ impl Serialize for Generation {
         }
 
         let msg = match self {
-            Generation::V1(gen) => TypedGeneration {
+            V1(gen) => TypedGeneration {
                 v: v1::SCHEMA_VERSION,
                 msg: serde_json::to_value(gen).map_err(S::Error::custom)?,
             },
