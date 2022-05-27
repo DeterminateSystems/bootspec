@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::{Result, SpecialisationName, SystemConfigurationRoot};
 
 /// The V1 bootspec schema version.
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u64 = 1;
 
 /// The V1 bootspec schema filename.
 pub const JSON_FILENAME: &str = "boot.v1.json";
@@ -15,10 +15,15 @@ pub const JSON_FILENAME: &str = "boot.v1.json";
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 /// V1 of the bootspec schema.
+///
+/// It has a `schemaVersion` field that will always be 1.
+///
+/// ## Warnings
+///
+/// Do not attempt to deserialize this struct from a bootspec document, as it does not enforce
+/// versioning. You want to use the [`crate::generation::Generation`] enum for both
+/// serialization and deserialization.
 pub struct GenerationV1 {
-    /// The version of the boot.json schema. Must be 1.
-    schema_version: u32,
-
     /// Label for the system closure
     pub label: String,
     /// Path to kernel (bzImage) -- $toplevel/kernel
@@ -105,7 +110,6 @@ impl GenerationV1 {
         };
 
         Ok(GenerationV1 {
-            schema_version: SCHEMA_VERSION,
             label: format!("NixOS {} (Linux {})", system_version, kernel_version),
             kernel,
             kernel_params,
@@ -123,7 +127,7 @@ mod tests {
     use std::path::PathBuf;
     use std::{collections::HashMap, fs};
 
-    use super::{GenerationV1, SystemConfigurationRoot, JSON_FILENAME, SCHEMA_VERSION};
+    use super::{GenerationV1, SystemConfigurationRoot, JSON_FILENAME};
     use tempfile::TempDir;
 
     fn create_generation_files_and_dirs(
@@ -217,7 +221,6 @@ mod tests {
         assert_eq!(
             spec,
             GenerationV1 {
-                schema_version: SCHEMA_VERSION,
                 label: "NixOS test-version-1 (Linux 1.1.1-test1)".into(),
                 kernel: generation.join("kernel-modules/bzImage"),
                 kernel_params,
@@ -283,7 +286,6 @@ mod tests {
         assert_eq!(
             spec,
             GenerationV1 {
-                schema_version: SCHEMA_VERSION,
                 label: "NixOS test-version-3 (Linux 1.1.1-test3)".into(),
                 kernel: generation.join("kernel-modules/bzImage"),
                 kernel_params,

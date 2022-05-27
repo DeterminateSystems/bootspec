@@ -2,6 +2,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
 
+use bootspec::generation::Generation;
 use bootspec::v1::GenerationV1;
 use bootspec::Result;
 
@@ -44,7 +45,8 @@ fn cli() -> Result<()> {
         )
     })?;
 
-    let pretty = serde_json::to_string_pretty(&spec)
+    let versioned_spec = Generation::V1(spec);
+    let pretty = serde_json::to_string_pretty(&versioned_spec)
         .map_err(|e| format!("Failed to make pretty JSON from bootspec:\n{}", e))?;
 
     fs::write(&out_path, pretty)
