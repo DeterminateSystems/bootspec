@@ -1,14 +1,15 @@
 {
-  "schemaVersion": 1,
-  "label": "NixOS 21.05pre-git (Linux 5.10.37)",
-  "kernel": "/nix/store/rrmsyrg9ksd9x2cqb01pmbw0yd0anf7v-linux-5.10.37/bzImage",
-  "kernelParams": [
-    "loglevel=4",
-    "net.ifnames=0"
-  ],
-  "init": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git/init",
-  "initrd": "/nix/store/5ci6pag0hclx1642nm5rs6zjl60drns4-initrd-linux-5.10.37/initrd",
-  "initrdSecrets": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git/append-initrd-secrets",
-  "specialisation": {},
-  "toplevel": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git"
+  "v1": {
+    "label": "NixOS 21.05pre-git (Linux 5.10.37)",
+    "kernel": "/nix/store/rrmsyrg9ksd9x2cqb01pmbw0yd0anf7v-linux-5.10.37/bzImage",
+    "kernelParams": [
+      "loglevel=4",
+      "net.ifnames=0"
+    ],
+    "init": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git/init",
+    "initrd": "/nix/store/5ci6pag0hclx1642nm5rs6zjl60drns4-initrd-linux-5.10.37/initrd",
+    "initrdSecrets": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git/append-initrd-secrets",
+    "specialisation": {},
+    "toplevel": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git"
+  }
 }

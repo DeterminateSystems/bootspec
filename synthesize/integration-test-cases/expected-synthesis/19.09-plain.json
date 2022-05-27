@@ -1,14 +1,15 @@
 {
-  "schemaVersion": 1,
-  "label": "NixOS 19.09pre-git (Linux 4.19.78)",
-  "kernel": "/nix/store/s7zp6i6r73a0sri2fihmpnwbqrpsk8fs-linux-4.19.78/bzImage",
-  "kernelParams": [
-    "loglevel=4",
-    "net.ifnames=0"
-  ],
-  "init": "/nix/store/wqr3p7hd4x59g14zx7qkz8sqvgl9ngvl-nixos-system-nixos-19.09pre-git/init",
-  "initrd": "/nix/store/d6xpsfsby2y1d2hvfhdgss45swrazipf-initrd-linux-4.19.78/initrd",
-  "initrdSecrets": "/nix/store/wqr3p7hd4x59g14zx7qkz8sqvgl9ngvl-nixos-system-nixos-19.09pre-git/append-initrd-secrets",
-  "specialisation": {},
-  "toplevel": "/nix/store/wqr3p7hd4x59g14zx7qkz8sqvgl9ngvl-nixos-system-nixos-19.09pre-git"
+  "v1": {
+    "label": "NixOS 19.09pre-git (Linux 4.19.78)",
+    "kernel": "/nix/store/s7zp6i6r73a0sri2fihmpnwbqrpsk8fs-linux-4.19.78/bzImage",
+    "kernelParams": [
+      "loglevel=4",
+      "net.ifnames=0"
+    ],
+    "init": "/nix/store/wqr3p7hd4x59g14zx7qkz8sqvgl9ngvl-nixos-system-nixos-19.09pre-git/init",
+    "initrd": "/nix/store/d6xpsfsby2y1d2hvfhdgss45swrazipf-initrd-linux-4.19.78/initrd",
+    "initrdSecrets": "/nix/store/wqr3p7hd4x59g14zx7qkz8sqvgl9ngvl-nixos-system-nixos-19.09pre-git/append-initrd-secrets",
+    "specialisation": {},
+    "toplevel": "/nix/store/wqr3p7hd4x59g14zx7qkz8sqvgl9ngvl-nixos-system-nixos-19.09pre-git"
+  }
 }
