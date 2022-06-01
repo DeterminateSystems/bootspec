@@ -59,3 +59,16 @@ jobs:
         with:
           fetch-depth: 0
       - uses: greut/eclint-action@v0
+
+  SynthesizeIntegration:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: cachix/install-nix-action@v17
+      with:
+        extra_nix_config: |
+          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+    - name: Verify synthesize integration test still passes
+      run: nix develop -c ./synthesize/integration-test-cases/verify.sh
