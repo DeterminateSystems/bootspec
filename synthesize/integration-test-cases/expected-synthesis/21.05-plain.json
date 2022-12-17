@@ -11,6 +11,7 @@
     "initrdSecrets": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git/append-initrd-secrets",
     "specialisation": {},
     "system": "x86_64-linux",
-    "toplevel": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git"
+    "toplevel": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git",
+    "extensions": {}
   }
 }

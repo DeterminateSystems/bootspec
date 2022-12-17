@@ -10,6 +10,7 @@
     "initrdSecrets": "/nix/store/jr5bql6xdfhhv4bmibiz3b74pjp8sdca-nixos-system-nixos-18.03pre-git/append-initrd-secrets",
     "specialisation": {},
     "system": "x86_64-linux",
-    "toplevel": "/nix/store/jr5bql6xdfhhv4bmibiz3b74pjp8sdca-nixos-system-nixos-18.03pre-git"
+    "toplevel": "/nix/store/jr5bql6xdfhhv4bmibiz3b74pjp8sdca-nixos-system-nixos-18.03pre-git",
+    "extensions": {}
   }
 }
