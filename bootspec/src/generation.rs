@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::v1;
@@ -12,11 +14,11 @@ use crate::v1;
 ///
 /// This enum is nonexhaustive, because there may be future versions added at any point, and tools
 /// should explicitly handle them (e.g. by noting they're currently unsupported).
-pub enum Generation {
-    V1(v1::GenerationV1),
+pub enum Generation<Extension: Default = HashMap<String, serde_json::Value>> {
+    V1(v1::GenerationV1<Extension>),
 }
 
-impl Generation {
+impl<Extension: Default> Generation<Extension> {
     /// The version of the bootspec document.
     pub fn version(&self) -> u64 {
         use Generation::*;
@@ -36,11 +38,135 @@ mod tests {
     use crate::SystemConfigurationRoot;
     use crate::SCHEMA_VERSION;
 
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Debug, Deserialize, Serialize, PartialEq, Default)]
+    struct TestExtension {
+        #[serde(rename = "org.test")]
+        test: String,
+    }
+
     #[test]
     fn valid_v1_json() {
         let json = r#"{
     "v1": {
         "system": "x86_64-linux",
+        "init": "/nix/store/xxx-nixos-system-xxx/init",
+        "initrd": "/nix/store/xxx-initrd-linux/initrd",
+        "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
+        "kernel": "/nix/store/xxx-linux/bzImage",
+        "kernelParams": [
+            "amd_iommu=on",
+            "amd_iommu=pt",
+            "iommu=pt",
+            "kvm.ignore_msrs=1",
+            "kvm.report_ignored_msrs=0",
+            "udev.log_priority=3",
+            "systemd.unified_cgroup_hierarchy=1",
+            "loglevel=4"
+        ],
+        "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx",
+        "specialisation": {},
+        "extensions": {}
+    }
+}"#;
+
+        let from_json: Generation = serde_json::from_str(&json).unwrap();
+        let Generation::V1(from_json) = from_json;
+
+        let expected = crate::v1::GenerationV1 {
+            label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
+            kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
+            kernel_params: vec![
+                "amd_iommu=on",
+                "amd_iommu=pt",
+                "iommu=pt",
+                "kvm.ignore_msrs=1",
+                "kvm.report_ignored_msrs=0",
+                "udev.log_priority=3",
+                "systemd.unified_cgroup_hierarchy=1",
+                "loglevel=4",
+            ]
+            .iter()
+            .map(ToString::to_string)
+            .collect(),
+            init: PathBuf::from("/nix/store/xxx-nixos-system-xxx/init"),
+            initrd: PathBuf::from("/nix/store/xxx-initrd-linux/initrd"),
+            initrd_secrets: Some(PathBuf::from(
+                "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
+            )),
+            specialisation: HashMap::new(),
+            extensions: HashMap::new(),
+            toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
+        };
+
+        assert_eq!(from_json, expected);
+    }
+
+    #[test]
+    fn valid_v1_json_with_typed_extension() {
+        let json = r#"{
+    "v1": {
+        "init": "/nix/store/xxx-nixos-system-xxx/init",
+        "initrd": "/nix/store/xxx-initrd-linux/initrd",
+        "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
+        "kernel": "/nix/store/xxx-linux/bzImage",
+        "kernelParams": [
+            "amd_iommu=on",
+            "amd_iommu=pt",
+            "iommu=pt",
+            "kvm.ignore_msrs=1",
+            "kvm.report_ignored_msrs=0",
+            "udev.log_priority=3",
+            "systemd.unified_cgroup_hierarchy=1",
+            "loglevel=4"
+        ],
+        "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx",
+        "specialisation": {},
+        "extensions": { "org.test": "hello" }
+    }
+}"#;
+
+        let from_json: Generation<TestExtension> = serde_json::from_str(&json).unwrap();
+        let Generation::V1(from_json) = from_json;
+
+        let expected = crate::v1::GenerationV1 {
+            label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
+            kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
+            kernel_params: vec![
+                "amd_iommu=on",
+                "amd_iommu=pt",
+                "iommu=pt",
+                "kvm.ignore_msrs=1",
+                "kvm.report_ignored_msrs=0",
+                "udev.log_priority=3",
+                "systemd.unified_cgroup_hierarchy=1",
+                "loglevel=4",
+            ]
+            .iter()
+            .map(ToString::to_string)
+            .collect(),
+            init: PathBuf::from("/nix/store/xxx-nixos-system-xxx/init"),
+            initrd: PathBuf::from("/nix/store/xxx-initrd-linux/initrd"),
+            initrd_secrets: Some(PathBuf::from(
+                "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
+            )),
+            specialisation: HashMap::new(),
+            extensions: TestExtension {
+                test: "hello".to_string(),
+            },
+            toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
+        };
+
+        assert_eq!(from_json, expected);
+    }
+
+    #[test]
+    fn valid_v1_json_without_extension() {
+        let json = r#"{
+    "v1": {
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
         "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
@@ -87,6 +213,7 @@ mod tests {
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
             specialisation: HashMap::new(),
+            extensions: HashMap::new(),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
 
