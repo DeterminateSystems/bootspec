@@ -18,7 +18,7 @@ pub const SCHEMA_VERSION: u64 = 1;
 /// Do not attempt to deserialize this struct from a bootspec document, as it does not enforce
 /// versioning. You want to use the [`crate::generation::Generation`] enum for both
 /// serialization and deserialization.
-pub struct GenerationV1 {
+pub struct GenerationV1<Extension = HashMap<String, serde_json::Value>> {
     /// Label for the system closure
     pub label: String,
     /// Path to kernel (bzImage) -- $toplevel/kernel
@@ -31,14 +31,15 @@ pub struct GenerationV1 {
     pub initrd: Option<PathBuf>,
     /// Path to "append-initrd-secrets" script -- $toplevel/append-initrd-secrets
     pub initrd_secrets: Option<PathBuf>,
-    /// Mapping of specialisation names to their boot.json
-    pub specialisation: HashMap<SpecialisationName, GenerationV1>,
     /// System double, e.g. x86_64-linux, for the system closure
     pub system: String,
+    /// Mapping of specialisation names to their boot.json
+    pub specialisation: HashMap<SpecialisationName, GenerationV1<Extension>>,
     /// config.system.build.toplevel path
     pub toplevel: SystemConfigurationRoot,
     /// User extensions for this specification
-    pub extensions: HashMap<String, serde_json::Value>,
+    #[serde(default)]
+    pub extensions: Extension,
 }
 
 impl GenerationV1 {
@@ -128,7 +129,7 @@ impl GenerationV1 {
             system,
             toplevel: SystemConfigurationRoot(generation),
             specialisation: HashMap::new(),
-            extensions: HashMap::new()
+            extensions: HashMap::new(),
         })
     }
 }
@@ -249,6 +250,7 @@ mod tests {
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
                 specialisation: HashMap::new(),
                 toplevel: SystemConfigurationRoot(generation),
+                extensions: HashMap::new()
             }
         );
     }
@@ -319,6 +321,7 @@ mod tests {
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
                 specialisation: HashMap::new(),
                 toplevel: SystemConfigurationRoot(generation),
+                extensions: HashMap::new()
             }
         );
     }

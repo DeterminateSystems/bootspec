@@ -30,6 +30,6 @@ pub const JSON_FILENAME: &str = "boot.json";
 
 // !!! IMPORTANT: KEEP `BootJson` and `SCHEMA_VERSION` IN SYNC !!!
 /// The current bootspec schema.
-pub type BootJson = v1::GenerationV1;
+pub type BootJson<Extension> = v1::GenerationV1<Extension>;
 /// The current bootspec schema version.
 pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
