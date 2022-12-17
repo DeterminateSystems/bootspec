@@ -9,7 +9,7 @@ use crate::{Result, SpecialisationName, SystemConfigurationRoot};
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
 
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 /// V1 of the bootspec schema.
 ///

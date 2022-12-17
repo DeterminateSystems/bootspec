@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::v1;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 #[non_exhaustive]
 /// An enum of all available bootspec versions.
