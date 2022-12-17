@@ -37,6 +37,8 @@ pub struct GenerationV1 {
     pub system: String,
     /// config.system.build.toplevel path
     pub toplevel: SystemConfigurationRoot,
+    /// User extensions for this specification
+    pub extensions: HashMap<String, serde_json::Value>,
 }
 
 impl GenerationV1 {
@@ -126,6 +128,7 @@ impl GenerationV1 {
             system,
             toplevel: SystemConfigurationRoot(generation),
             specialisation: HashMap::new(),
+            extensions: HashMap::new()
         })
     }
 }

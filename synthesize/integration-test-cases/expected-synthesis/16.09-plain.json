@@ -10,6 +10,7 @@
     "initrdSecrets": null,
     "specialisation": {},
     "system": "x86_64-linux",
-    "toplevel": "/nix/store/jfwlp9s434kijn4i53fr5pvrryzspwc4-nixos-system-nixos-16.09pre-git"
+    "toplevel": "/nix/store/jfwlp9s434kijn4i53fr5pvrryzspwc4-nixos-system-nixos-16.09pre-git",
+    "extensions": {}
   }
 }

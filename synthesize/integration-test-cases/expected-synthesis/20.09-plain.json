@@ -11,6 +11,7 @@
     "initrdSecrets": "/nix/store/6621qzx8dlvwgpjjs1sarw9lxv4x38ps-nixos-system-nixos-20.09pre-git/append-initrd-secrets",
     "specialisation": {},
     "system": "x86_64-linux",
-    "toplevel": "/nix/store/6621qzx8dlvwgpjjs1sarw9lxv4x38ps-nixos-system-nixos-20.09pre-git"
+    "toplevel": "/nix/store/6621qzx8dlvwgpjjs1sarw9lxv4x38ps-nixos-system-nixos-20.09pre-git",
+    "extensions": {}
   }
 }
