@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::fmt;
 
 use std::error::Error;
@@ -33,3 +34,14 @@ pub const JSON_FILENAME: &str = "boot.json";
 pub type BootJson<Extension> = v1::GenerationV1<Extension>;
 /// The current bootspec schema version.
 pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
+
+// Enable conversions from Generation into the current Bootspec schema.
+impl<Extension> TryFrom<generation::Generation<Extension>> for BootJson<Extension> {
+    type Error = &'static str;
+
+    fn try_from(value: generation::Generation<Extension>) -> Result<Self, Self::Error> {
+        match value {
+            generation::Generation::V1(boot_json) => Ok(boot_json),
+        }
+    }
+}
