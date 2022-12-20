@@ -9,7 +9,7 @@ use crate::{Result, SpecialisationName, SystemConfigurationRoot};
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 /// V1 of the bootspec schema.
 ///
@@ -38,8 +38,8 @@ pub struct GenerationV1<Extension = HashMap<String, serde_json::Value>> {
     /// config.system.build.toplevel path
     pub toplevel: SystemConfigurationRoot,
     /// User extensions for this specification
-    #[serde(default)]
-    pub extensions: Extension,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<Extension>,
 }
 
 impl GenerationV1 {
@@ -129,7 +129,7 @@ impl GenerationV1 {
             system,
             toplevel: SystemConfigurationRoot(generation),
             specialisation: HashMap::new(),
-            extensions: HashMap::new(),
+            extensions: None,
         })
     }
 }
@@ -250,7 +250,7 @@ mod tests {
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
                 specialisation: HashMap::new(),
                 toplevel: SystemConfigurationRoot(generation),
-                extensions: HashMap::new()
+                extensions: None
             }
         );
     }
@@ -321,7 +321,7 @@ mod tests {
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
                 specialisation: HashMap::new(),
                 toplevel: SystemConfigurationRoot(generation),
-                extensions: HashMap::new()
+                extensions: None
             }
         );
     }
