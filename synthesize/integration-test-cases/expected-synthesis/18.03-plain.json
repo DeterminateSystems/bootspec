@@ -8,9 +8,8 @@
     "init": "/nix/store/jr5bql6xdfhhv4bmibiz3b74pjp8sdca-nixos-system-nixos-18.03pre-git/init",
     "initrd": "/nix/store/gnjk07h7ynhp3f8x145dv224j0wf0s1h-initrd/initrd",
     "initrdSecrets": "/nix/store/jr5bql6xdfhhv4bmibiz3b74pjp8sdca-nixos-system-nixos-18.03pre-git/append-initrd-secrets",
-    "specialisation": {},
     "system": "x86_64-linux",
-    "toplevel": "/nix/store/jr5bql6xdfhhv4bmibiz3b74pjp8sdca-nixos-system-nixos-18.03pre-git",
-    "extensions": {}
+    "specialisation": {},
+    "toplevel": "/nix/store/jr5bql6xdfhhv4bmibiz3b74pjp8sdca-nixos-system-nixos-18.03pre-git"
   }
 }

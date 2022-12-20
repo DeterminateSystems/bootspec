@@ -9,9 +9,8 @@
     "init": "/nix/store/wqr3p7hd4x59g14zx7qkz8sqvgl9ngvl-nixos-system-nixos-19.09pre-git/init",
     "initrd": "/nix/store/d6xpsfsby2y1d2hvfhdgss45swrazipf-initrd-linux-4.19.78/initrd",
     "initrdSecrets": "/nix/store/wqr3p7hd4x59g14zx7qkz8sqvgl9ngvl-nixos-system-nixos-19.09pre-git/append-initrd-secrets",
-    "specialisation": {},
     "system": "x86_64-linux",
-    "toplevel": "/nix/store/wqr3p7hd4x59g14zx7qkz8sqvgl9ngvl-nixos-system-nixos-19.09pre-git",
-    "extensions": {}
+    "specialisation": {},
+    "toplevel": "/nix/store/wqr3p7hd4x59g14zx7qkz8sqvgl9ngvl-nixos-system-nixos-19.09pre-git"
   }
 }
