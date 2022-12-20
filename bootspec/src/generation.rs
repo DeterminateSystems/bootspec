@@ -76,6 +76,7 @@ mod tests {
         let Generation::V1(from_json) = from_json;
 
         let expected = crate::v1::GenerationV1 {
+            system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
             kernel_params: vec![
@@ -92,7 +93,7 @@ mod tests {
             .map(ToString::to_string)
             .collect(),
             init: PathBuf::from("/nix/store/xxx-nixos-system-xxx/init"),
-            initrd: PathBuf::from("/nix/store/xxx-initrd-linux/initrd"),
+            initrd: Some(PathBuf::from("/nix/store/xxx-initrd-linux/initrd")),
             initrd_secrets: Some(PathBuf::from(
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
@@ -133,6 +134,7 @@ mod tests {
         let Generation::V1(from_json) = from_json;
 
         let expected = crate::v1::GenerationV1 {
+            system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
             kernel_params: vec![
@@ -149,7 +151,7 @@ mod tests {
             .map(ToString::to_string)
             .collect(),
             init: PathBuf::from("/nix/store/xxx-nixos-system-xxx/init"),
-            initrd: PathBuf::from("/nix/store/xxx-initrd-linux/initrd"),
+            initrd: Some(PathBuf::from("/nix/store/xxx-initrd-linux/initrd")),
             initrd_secrets: Some(PathBuf::from(
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
@@ -221,7 +223,7 @@ mod tests {
     }
 
     #[test]
-    fn valid_v1_json_without_initrd() {
+    fn valid_v1_json_without_initrd_and_specialisation() {
         let json = r#"{
     "v1": {
         "system": "x86_64-linux",
@@ -239,7 +241,6 @@ mod tests {
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
         "toplevel": "/nix/store/xxx-nixos-system-xxx",
-        "specialisation": {}
     }
 }"#;
 
@@ -267,6 +268,7 @@ mod tests {
             initrd: None,
             initrd_secrets: None,
             specialisation: HashMap::new(),
+            extensions: None,
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
 

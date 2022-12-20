@@ -34,6 +34,7 @@ pub struct GenerationV1<Extension = HashMap<String, serde_json::Value>> {
     /// System double, e.g. x86_64-linux, for the system closure
     pub system: String,
     /// Mapping of specialisation names to their boot.json
+    #[serde(default = "HashMap::new")]
     pub specialisation: HashMap<SpecialisationName, GenerationV1<Extension>>,
     /// config.system.build.toplevel path
     pub toplevel: SystemConfigurationRoot,
