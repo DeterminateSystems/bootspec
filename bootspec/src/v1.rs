@@ -33,7 +33,7 @@ pub struct GenerationV1 {
     /// Path to the init script
     pub init: PathBuf,
     /// Path to initrd -- $toplevel/initrd
-    pub initrd: PathBuf,
+    pub initrd: Option<PathBuf>,
     /// Path to "append-initrd-secrets" script -- $toplevel/append-initrd-secrets
     pub initrd_secrets: Option<PathBuf>,
     /// Mapping of specialisation names to their boot.json
@@ -105,8 +105,15 @@ impl GenerationV1 {
 
         let init = generation.join("init");
 
-        let initrd = fs::canonicalize(generation.join("initrd"))
-            .map_err(|e| format!("Failed to canonicalize the initrd:\n{}", e))?;
+        let initrd_path = generation.join("initrd");
+        let initrd = if initrd_path.exists() {
+            Some(
+                fs::canonicalize(initrd_path)
+                    .map_err(|e| format!("Failed to canonicalize the initrd:\n{}", e))?,
+            )
+        } else {
+            None
+        };
 
         let initrd_secrets = if generation.join("append-initrd-secrets").exists() {
             Some(generation.join("append-initrd-secrets"))
@@ -239,7 +246,7 @@ mod tests {
                 kernel: generation.join("kernel-modules/bzImage"),
                 kernel_params,
                 init: generation.join("init"),
-                initrd: generation.join("initrd"),
+                initrd: Some(generation.join("initrd")),
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
                 specialisation: HashMap::new(),
                 toplevel: SystemConfigurationRoot(generation),
@@ -309,7 +316,7 @@ mod tests {
                 kernel: generation.join("kernel-modules/bzImage"),
                 kernel_params,
                 init: generation.join("init"),
-                initrd: generation.join("initrd"),
+                initrd: Some(generation.join("initrd")),
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
                 specialisation: HashMap::new(),
                 toplevel: SystemConfigurationRoot(generation),
