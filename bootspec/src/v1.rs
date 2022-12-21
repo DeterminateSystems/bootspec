@@ -2,12 +2,46 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use serde::{Deserialize, Serialize};
+use serde::de;
+use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::{Result, SpecialisationName, SystemConfigurationRoot};
 
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
+
+fn deserialize_some_only<'de, D, Ext>(deserializer: D) -> Result<Option<Ext>, D::Error>
+where
+    D: Deserializer<'de>,
+    Ext: Deserialize<'de>,
+{
+    #[derive(Debug, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct EmptyObject {}
+
+    #[derive(Debug, Deserialize)]
+    #[serde(untagged)]
+    enum EmptyOrNot<Y> {
+        NonEmpty(Y),
+        Empty(EmptyObject),
+        Null,
+    }
+
+    let empty_or_not: EmptyOrNot<Ext> = EmptyOrNot::deserialize(deserializer)?;
+
+    match empty_or_not {
+        EmptyOrNot::NonEmpty(e) => Ok(Some(e)),
+        EmptyOrNot::Empty(_) => Ok(None),
+        EmptyOrNot::Null => Err(de::Error::custom("expected missing field rather than null")),
+    }
+}
+
+// FIXME: unfortunately, Rust is not able to derive
+// properly Default on Option<T> because too much generics.
+// see https://github.com/rust-lang/rust/issues/26925 (I think.)
+fn none<Extension>() -> Option<Extension> {
+    None
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -39,7 +73,11 @@ pub struct GenerationV1<Extension = HashMap<String, serde_json::Value>> {
     /// config.system.build.toplevel path
     pub toplevel: SystemConfigurationRoot,
     /// User extensions for this specification
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default = "none",
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_some_only"
+    )]
     pub extensions: Option<Extension>,
 }
 
