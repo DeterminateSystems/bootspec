@@ -10,6 +10,7 @@
     "initrd": "/nix/store/5ci6pag0hclx1642nm5rs6zjl60drns4-initrd-linux-5.10.37/initrd",
     "initrdSecrets": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git/append-initrd-secrets",
     "specialisation": {},
+    "system": "x86_64-linux",
     "toplevel": "/nix/store/sz7d2wmq5jx4rrdmx2ksb9wmc5raqvwn-nixos-system-nixos-21.05pre-git"
   }
 }

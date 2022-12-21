@@ -38,6 +38,8 @@ pub struct GenerationV1 {
     pub initrd_secrets: Option<PathBuf>,
     /// Mapping of specialisation names to their boot.json
     pub specialisation: HashMap<SpecialisationName, GenerationV1>,
+    /// System double, e.g. x86_64-linux, for the system closure
+    pub system: String,
     /// config.system.build.toplevel path
     pub toplevel: SystemConfigurationRoot,
 }
@@ -76,6 +78,9 @@ impl GenerationV1 {
 
         let system_version = fs::read_to_string(generation.join("nixos-version"))
             .map_err(|e| format!("Failed to read system version:\n{}", e))?;
+
+        let system = fs::read_to_string(generation.join("system"))
+            .map_err(|e| format!("Failed to read system double:\n{}", e))?;
 
         let kernel = fs::canonicalize(generation.join("kernel-modules/bzImage"))
             .map_err(|e| format!("Failed to canonicalize the kernel:\n{}", e))?;
@@ -116,6 +121,7 @@ impl GenerationV1 {
             init,
             initrd,
             initrd_secrets,
+            system,
             toplevel: SystemConfigurationRoot(generation),
             specialisation: HashMap::new(),
         })
@@ -133,6 +139,7 @@ mod tests {
     fn create_generation_files_and_dirs(
         generation: &PathBuf,
         kernel_version: &str,
+        system: &str,
         system_version: &str,
         kernel_params: &Vec<String>,
     ) {
@@ -147,6 +154,7 @@ mod tests {
 
         fs::write(generation.join("nixos-version"), system_version)
             .expect("Failed to write to test generation");
+        fs::write(generation.join("system"), system).expect("Failed to write system double");
         fs::write(generation.join("kernel-modules/bzImage"), "")
             .expect("Failed to write to test generation");
         fs::write(generation.join("kernel-params"), kernel_params.join(" "))
@@ -158,6 +166,7 @@ mod tests {
     }
 
     fn scaffold(
+        system: &str,
         system_version: &str,
         kernel_version: &str,
         kernel_params: &Vec<String>,
@@ -170,6 +179,7 @@ mod tests {
         create_generation_files_and_dirs(
             &generation,
             kernel_version,
+            system,
             system_version,
             kernel_params,
         );
@@ -183,6 +193,7 @@ mod tests {
                     &spec_path,
                     kernel_version,
                     system_version,
+                    system,
                     kernel_params,
                 );
 
@@ -198,6 +209,7 @@ mod tests {
 
     #[test]
     fn no_bootspec_no_specialisation() {
+        let system = String::from("x86_64-linux");
         let system_version = String::from("test-version-1");
         let kernel_version = String::from("1.1.1-test1");
         let kernel_params = [
@@ -210,6 +222,7 @@ mod tests {
         .collect::<Vec<_>>();
 
         let generation = scaffold(
+            &system,
             &system_version,
             &kernel_version,
             &kernel_params,
@@ -221,6 +234,7 @@ mod tests {
         assert_eq!(
             spec,
             GenerationV1 {
+                system,
                 label: "NixOS test-version-1 (Linux 1.1.1-test1)".into(),
                 kernel: generation.join("kernel-modules/bzImage"),
                 kernel_params,
@@ -235,6 +249,7 @@ mod tests {
 
     #[test]
     fn no_bootspec_with_specialisation_no_bootspec() {
+        let system = String::from("x86_64-linux");
         let system_version = String::from("test-version-2");
         let kernel_version = String::from("1.1.1-test2");
         let kernel_params = [
@@ -248,6 +263,7 @@ mod tests {
         let specialisations = vec!["spec1", "spec2"];
 
         let generation = scaffold(
+            &system,
             &system_version,
             &kernel_version,
             &kernel_params,
@@ -260,6 +276,7 @@ mod tests {
 
     #[test]
     fn with_bootspec_no_specialisation() {
+        let system = String::from("x86_64-linux");
         let system_version = String::from("test-version-3");
         let kernel_version = String::from("1.1.1-test3");
         let kernel_params = [
@@ -272,6 +289,7 @@ mod tests {
         .collect::<Vec<_>>();
 
         let generation = scaffold(
+            &system,
             &system_version,
             &kernel_version,
             &kernel_params,
@@ -286,6 +304,7 @@ mod tests {
         assert_eq!(
             spec,
             GenerationV1 {
+                system,
                 label: "NixOS test-version-3 (Linux 1.1.1-test3)".into(),
                 kernel: generation.join("kernel-modules/bzImage"),
                 kernel_params,
@@ -300,6 +319,7 @@ mod tests {
 
     #[test]
     fn with_bootspec_with_specialisations_with_bootspec() {
+        let system = String::from("x86_64-linux");
         let system_version = String::from("test-version-4");
         let kernel_version = String::from("1.1.1-test4");
         let kernel_params = [
@@ -313,6 +333,7 @@ mod tests {
         let specialisations = vec!["spec1", "spec2"];
 
         let generation = scaffold(
+            &system,
             &system_version,
             &kernel_version,
             &kernel_params,
