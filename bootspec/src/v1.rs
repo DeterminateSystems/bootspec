@@ -16,8 +16,6 @@ pub const JSON_FILENAME: &str = "boot.v1.json";
 #[serde(rename_all = "camelCase")]
 /// V1 of the bootspec schema.
 ///
-/// It has a `schemaVersion` field that will always be 1.
-///
 /// ## Warnings
 ///
 /// Do not attempt to deserialize this struct from a bootspec document, as it does not enforce
