@@ -1,7 +1,6 @@
 use std::convert::TryFrom;
-use std::fmt;
-
 use std::error::Error;
+use std::fmt;
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
@@ -31,15 +30,17 @@ pub const JSON_FILENAME: &str = "boot.json";
 
 // !!! IMPORTANT: KEEP `BootJson` and `SCHEMA_VERSION` IN SYNC !!!
 /// The current bootspec schema.
-pub type BootJson<Extension> = v1::GenerationV1<Extension>;
+pub type BootJson = v1::GenerationV1;
 /// The current bootspec schema version.
 pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
+/// The current Extension type.
+pub type Extension = v1::Extension;
 
 // Enable conversions from Generation into the current Bootspec schema.
-impl<Extension> TryFrom<generation::Generation<Extension>> for BootJson<Extension> {
+impl TryFrom<generation::Generation> for BootJson {
     type Error = &'static str;
 
-    fn try_from(value: generation::Generation<Extension>) -> Result<Self, Self::Error> {
+    fn try_from(value: generation::Generation) -> Result<Self, Self::Error> {
         match value {
             generation::Generation::V1(boot_json) => Ok(boot_json),
         }

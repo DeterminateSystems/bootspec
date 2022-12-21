@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
 
 use crate::v1;
@@ -14,11 +12,11 @@ use crate::v1;
 ///
 /// This enum is nonexhaustive, because there may be future versions added at any point, and tools
 /// should explicitly handle them (e.g. by noting they're currently unsupported).
-pub enum Generation<Extension = HashMap<String, serde_json::Value>> {
-    V1(v1::GenerationV1<Extension>),
+pub enum Generation {
+    V1(v1::GenerationV1),
 }
 
-impl<Extension> Generation<Extension> {
+impl Generation {
     /// The version of the bootspec document.
     pub fn version(&self) -> u64 {
         use Generation::*;
@@ -38,17 +36,18 @@ mod tests {
     use crate::SystemConfigurationRoot;
     use crate::SCHEMA_VERSION;
 
+    use serde::de::IntoDeserializer;
     use serde::{Deserialize, Serialize};
 
     #[derive(Debug, Deserialize, Serialize, PartialEq, Default)]
     struct TestExtension {
-        #[serde(rename = "org.test")]
+        #[serde(rename = "key")]
         test: String,
     }
 
     #[derive(Debug, Deserialize, Serialize, PartialEq, Default)]
     struct TestOptionalExtension {
-        #[serde(rename = "org.test")]
+        #[serde(rename = "key")]
         test: Option<String>,
     }
 
@@ -104,7 +103,7 @@ mod tests {
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
             specialisation: HashMap::new(),
-            extensions: Some(HashMap::new()),
+            extensions: HashMap::new(),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
 
@@ -133,11 +132,11 @@ mod tests {
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
         "toplevel": "/nix/store/xxx-nixos-system-xxx",
         "specialisation": {},
-        "extensions": { "org.test": "hello" }
+        "extensions": { "org.test": { "key": "hello" } }
     }
 }"#;
 
-        let from_json: Generation<TestExtension> = serde_json::from_str(&json).unwrap();
+        let from_json: Generation = serde_json::from_str(&json).unwrap();
         let Generation::V1(from_json) = from_json;
 
         let expected = crate::v1::GenerationV1 {
@@ -163,13 +162,28 @@ mod tests {
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
             specialisation: HashMap::new(),
-            extensions: Some(TestExtension {
-                test: "hello".to_string(),
-            }),
+            extensions: HashMap::from([(
+                "org.test".into(),
+                HashMap::from([("key".into(), serde_json::to_value("hello").unwrap())]),
+            )]),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
 
+        let from_extension: TestExtension = Deserialize::deserialize(
+            from_json
+                .extensions
+                .get("org.test")
+                .unwrap()
+                .to_owned()
+                .into_deserializer(),
+        )
+        .unwrap();
+        let expected_extension = TestExtension {
+            test: "hello".into(),
+        };
+
         assert_eq!(from_json, expected);
+        assert_eq!(from_extension, expected_extension);
     }
 
     #[test]
@@ -198,7 +212,7 @@ mod tests {
     }
 }"#;
 
-        let from_json: Generation<TestOptionalExtension> = serde_json::from_str(&json).unwrap();
+        let from_json: Generation = serde_json::from_str(&json).unwrap();
         let Generation::V1(from_json) = from_json;
 
         let expected = crate::v1::GenerationV1 {
@@ -224,7 +238,7 @@ mod tests {
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
             specialisation: HashMap::new(),
-            extensions: Some(TestOptionalExtension { test: None }),
+            extensions: HashMap::new(),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
 
@@ -232,7 +246,7 @@ mod tests {
     }
 
     #[test]
-    fn invalid_v1_json_with_typed_optional_extension_fields_and_null() {
+    fn invalid_v1_json_with_null_extension() {
         let json = r#"{
     "v1": {
         "init": "/nix/store/xxx-nixos-system-xxx/init",
@@ -256,7 +270,7 @@ mod tests {
     }
 }"#;
         let json_err = serde_json::from_str::<Generation>(&json).unwrap_err();
-        assert!(json_err.to_string().contains("expected missing field"));
+        assert!(json_err.to_string().contains("expected a map"));
     }
 
     #[test]
@@ -310,41 +324,11 @@ mod tests {
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
             specialisation: HashMap::new(),
-            extensions: None,
+            extensions: HashMap::new(),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
 
         assert_eq!(from_json, expected);
-    }
-
-    #[test]
-    fn invalid_v1_json_with_null_extension() {
-        let json = r#"{
-    "v1": {
-        "system": "x86_64-linux",
-        "init": "/nix/store/xxx-nixos-system-xxx/init",
-        "initrd": "/nix/store/xxx-initrd-linux/initrd",
-        "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
-        "kernel": "/nix/store/xxx-linux/bzImage",
-        "kernelParams": [
-            "amd_iommu=on",
-            "amd_iommu=pt",
-            "iommu=pt",
-            "kvm.ignore_msrs=1",
-            "kvm.report_ignored_msrs=0",
-            "udev.log_priority=3",
-            "systemd.unified_cgroup_hierarchy=1",
-            "loglevel=4"
-        ],
-        "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-        "toplevel": "/nix/store/xxx-nixos-system-xxx",
-        "specialisation": {},
-        "extensions": null
-    }
-}"#;
-
-        let json_err = serde_json::from_str::<Generation>(&json).unwrap_err();
-        assert!(json_err.to_string().contains("expected missing field"));
     }
 
     #[test]
@@ -394,7 +378,7 @@ mod tests {
             initrd: None,
             initrd_secrets: None,
             specialisation: HashMap::new(),
-            extensions: Some(HashMap::new()),
+            extensions: HashMap::new(),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
 
