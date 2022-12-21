@@ -2,46 +2,15 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use serde::de;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{Result, SpecialisationName, SystemConfigurationRoot};
 
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
 
-fn deserialize_some_only<'de, D, Ext>(deserializer: D) -> Result<Option<Ext>, D::Error>
-where
-    D: Deserializer<'de>,
-    Ext: Deserialize<'de>,
-{
-    #[derive(Debug, Deserialize)]
-    #[serde(deny_unknown_fields)]
-    struct EmptyObject {}
-
-    #[derive(Debug, Deserialize)]
-    #[serde(untagged)]
-    enum EmptyOrNot<Y> {
-        NonEmpty(Y),
-        Empty(EmptyObject),
-        Null,
-    }
-
-    let empty_or_not: EmptyOrNot<Ext> = EmptyOrNot::deserialize(deserializer)?;
-
-    match empty_or_not {
-        EmptyOrNot::NonEmpty(e) => Ok(Some(e)),
-        EmptyOrNot::Empty(_) => Ok(None),
-        EmptyOrNot::Null => Err(de::Error::custom("expected missing field rather than null")),
-    }
-}
-
-// FIXME: unfortunately, Rust is not able to derive
-// properly Default on Option<T> because too much generics.
-// see https://github.com/rust-lang/rust/issues/26925 (I think.)
-fn none<Extension>() -> Option<Extension> {
-    None
-}
+/// User-specific extension data
+pub type Extension = HashMap<String, serde_json::Value>;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -52,7 +21,7 @@ fn none<Extension>() -> Option<Extension> {
 /// Do not attempt to deserialize this struct from a bootspec document, as it does not enforce
 /// versioning. You want to use the [`crate::generation::Generation`] enum for both
 /// serialization and deserialization.
-pub struct GenerationV1<Extension = HashMap<String, serde_json::Value>> {
+pub struct GenerationV1 {
     /// Label for the system closure
     pub label: String,
     /// Path to kernel (bzImage) -- $toplevel/kernel
@@ -69,16 +38,12 @@ pub struct GenerationV1<Extension = HashMap<String, serde_json::Value>> {
     pub system: String,
     /// Mapping of specialisation names to their boot.json
     #[serde(default = "HashMap::new")]
-    pub specialisation: HashMap<SpecialisationName, GenerationV1<Extension>>,
+    pub specialisation: HashMap<SpecialisationName, GenerationV1>,
     /// config.system.build.toplevel path
     pub toplevel: SystemConfigurationRoot,
     /// User extensions for this specification
-    #[serde(
-        default = "none",
-        skip_serializing_if = "Option::is_none",
-        deserialize_with = "deserialize_some_only"
-    )]
-    pub extensions: Option<Extension>,
+    #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty")]
+    pub extensions: HashMap<String, Extension>,
 }
 
 impl GenerationV1 {
@@ -168,7 +133,7 @@ impl GenerationV1 {
             system,
             toplevel: SystemConfigurationRoot(generation),
             specialisation: HashMap::new(),
-            extensions: None,
+            extensions: HashMap::new(),
         })
     }
 }
@@ -289,7 +254,7 @@ mod tests {
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
                 specialisation: HashMap::new(),
                 toplevel: SystemConfigurationRoot(generation),
-                extensions: None
+                extensions: HashMap::new()
             }
         );
     }
@@ -360,7 +325,7 @@ mod tests {
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
                 specialisation: HashMap::new(),
                 toplevel: SystemConfigurationRoot(generation),
-                extensions: None
+                extensions: HashMap::new()
             }
         );
     }
