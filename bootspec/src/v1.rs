@@ -9,9 +9,6 @@ use crate::{Result, SpecialisationName, SystemConfigurationRoot};
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
 
-/// The V1 bootspec schema filename.
-pub const JSON_FILENAME: &str = "boot.v1.json";
-
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 /// V1 of the bootspec schema.
@@ -138,7 +135,8 @@ mod tests {
     use std::path::PathBuf;
     use std::{collections::HashMap, fs};
 
-    use super::{GenerationV1, SystemConfigurationRoot, JSON_FILENAME};
+    use super::{GenerationV1, SystemConfigurationRoot};
+    use crate::JSON_FILENAME;
     use tempfile::TempDir;
 
     fn create_generation_files_and_dirs(
