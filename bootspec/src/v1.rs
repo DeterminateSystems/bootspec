@@ -9,7 +9,7 @@ use crate::{Result, SpecialisationName, SystemConfigurationRoot};
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
 
-/// User-specific extension data
+/// User-specified extension data
 pub type Extension = HashMap<String, serde_json::Value>;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
