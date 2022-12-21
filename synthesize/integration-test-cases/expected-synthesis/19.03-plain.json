@@ -9,6 +9,7 @@
     "initrd": "/nix/store/fv9ag95k2ww4w87grwj6hg0b25is5giy-initrd/initrd",
     "initrdSecrets": "/nix/store/wp2gq8zzcixy2d1dvswhbhdl532jxhsf-nixos-system-nixos-19.03pre-git/append-initrd-secrets",
     "specialisation": {},
+    "system": "x86_64-linux",
     "toplevel": "/nix/store/wp2gq8zzcixy2d1dvswhbhdl532jxhsf-nixos-system-nixos-19.03pre-git"
   }
 }

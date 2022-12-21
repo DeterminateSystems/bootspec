@@ -40,6 +40,7 @@ mod tests {
     fn valid_v1_json() {
         let json = r#"{
     "v1": {
+        "system": "x86_64-linux",
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
         "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
@@ -64,6 +65,7 @@ mod tests {
         let Generation::V1(from_json) = from_json;
 
         let expected = crate::v1::GenerationV1 {
+            system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
             kernel_params: vec![

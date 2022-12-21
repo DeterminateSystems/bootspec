@@ -9,6 +9,7 @@
     "initrd": "/nix/store/q1hg158mvnc9bscc22cv45ys484c4g9x-initrd/initrd",
     "initrdSecrets": null,
     "specialisation": {},
+    "system": "x86_64-linux",
     "toplevel": "/nix/store/k0lfhjxd5znyrqkgrdi3hh7wxr885fcj-nixos-system-nixos-16.03pre-git"
   }
 }
