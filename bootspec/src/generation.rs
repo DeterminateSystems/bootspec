@@ -46,6 +46,12 @@ mod tests {
         test: String,
     }
 
+    #[derive(Debug, Deserialize, Serialize, PartialEq, Default)]
+    struct TestOptionalExtension {
+        #[serde(rename = "org.test")]
+        test: Option<String>,
+    }
+
     #[test]
     fn valid_v1_json() {
         let json = r#"{
@@ -166,6 +172,62 @@ mod tests {
         assert_eq!(from_json, expected);
     }
 
+    #[test]
+    fn valid_v1_json_with_typed_optional_extension_fields() {
+        let json = r#"{
+    "v1": {
+        "init": "/nix/store/xxx-nixos-system-xxx/init",
+        "initrd": "/nix/store/xxx-initrd-linux/initrd",
+        "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
+        "kernel": "/nix/store/xxx-linux/bzImage",
+        "kernelParams": [
+            "amd_iommu=on",
+            "amd_iommu=pt",
+            "iommu=pt",
+            "kvm.ignore_msrs=1",
+            "kvm.report_ignored_msrs=0",
+            "udev.log_priority=3",
+            "systemd.unified_cgroup_hierarchy=1",
+            "loglevel=4"
+        ],
+        "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx",
+        "specialisation": {},
+        "extensions": {}
+    }
+}"#;
+
+        let from_json: Generation<TestOptionalExtension> = serde_json::from_str(&json).unwrap();
+        let Generation::V1(from_json) = from_json;
+
+        let expected = crate::v1::GenerationV1 {
+            label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
+            kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
+            kernel_params: vec![
+                "amd_iommu=on",
+                "amd_iommu=pt",
+                "iommu=pt",
+                "kvm.ignore_msrs=1",
+                "kvm.report_ignored_msrs=0",
+                "udev.log_priority=3",
+                "systemd.unified_cgroup_hierarchy=1",
+                "loglevel=4",
+            ]
+            .iter()
+            .map(ToString::to_string)
+            .collect(),
+            init: PathBuf::from("/nix/store/xxx-nixos-system-xxx/init"),
+            initrd: PathBuf::from("/nix/store/xxx-initrd-linux/initrd"),
+            initrd_secrets: Some(PathBuf::from(
+                "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
+            )),
+            specialisation: HashMap::new(),
+            extensions: Some(TestOptionalExtension { test: None }),
+            toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
+        };
+
+        assert_eq!(from_json, expected);
+    }
     #[test]
     fn valid_v1_json_without_extension() {
         let json = r#"{
