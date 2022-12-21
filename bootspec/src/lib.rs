@@ -28,13 +28,13 @@ pub struct SystemConfigurationRoot(pub PathBuf);
 /// The bootspec schema filename.
 pub const JSON_FILENAME: &str = "boot.json";
 
-// !!! IMPORTANT: KEEP `BootJson` and `SCHEMA_VERSION` IN SYNC !!!
+// !!! IMPORTANT: KEEP `BootJson`, `Extension`, and `SCHEMA_VERSION` IN SYNC !!!
 /// The current bootspec schema.
 pub type BootJson = v1::GenerationV1;
-/// The current bootspec schema version.
-pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
 /// The current Extension type.
 pub type Extension = v1::Extension;
+/// The current bootspec schema version.
+pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
 
 // Enable conversions from Generation into the current Bootspec schema.
 impl TryFrom<generation::Generation> for BootJson {
