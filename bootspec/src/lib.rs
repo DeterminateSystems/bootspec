@@ -17,10 +17,11 @@ pub struct SpecialisationName(pub String);
 /// A wrapper type describing the root directory of a NixOS system configuration.
 pub struct SystemConfigurationRoot(pub PathBuf);
 
-// !!! IMPORTANT: KEEP `BootJson`, `SCHEMA_VERSION`, and `JSON_FILENAME` IN SYNC !!!
+/// The bootspec schema filename.
+pub const JSON_FILENAME: &str = "boot.json";
+
+// !!! IMPORTANT: KEEP `BootJson` and `SCHEMA_VERSION` IN SYNC !!!
 /// The current bootspec schema.
 pub type BootJson = v1::GenerationV1;
 /// The current bootspec schema version.
 pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
-/// The current bootspec schema filename.
-pub const JSON_FILENAME: &str = v1::JSON_FILENAME;
