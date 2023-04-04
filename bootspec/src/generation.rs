@@ -1,9 +1,19 @@
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
-use crate::v1;
+use crate::{v1, Extension, SpecialisationName};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(rename_all = "lowercase")]
+pub struct BootGeneration {
+    #[serde(flatten)]
+    pub generation: Generation,
+    #[serde(default = "HashMap::new", rename = "org.nixos.specialisation.v1")]
+    pub specialisations: HashMap<SpecialisationName, Generation>,
+    #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty", flatten)]
+    pub extensions: HashMap<String, Extension>
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[non_exhaustive]
 /// An enum of all available bootspec versions.
 ///
@@ -13,6 +23,7 @@ use crate::v1;
 /// This enum is nonexhaustive, because there may be future versions added at any point, and tools
 /// should explicitly handle them (e.g. by noting they're currently unsupported).
 pub enum Generation {
+    #[serde(rename="org.nixos.bootspec.v1")]
     V1(v1::GenerationV1),
 }
 
@@ -54,7 +65,7 @@ mod tests {
     #[test]
     fn valid_v1_json() {
         let json = r#"{
-    "v1": {
+    "org.nixos.bootspec.v1": {
         "system": "x86_64-linux",
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
@@ -71,10 +82,9 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-        "toplevel": "/nix/store/xxx-nixos-system-xxx",
-        "specialisation": {},
-        "extensions": {}
-    }
+        "toplevel": "/nix/store/xxx-nixos-system-xxx"
+    },
+    "org.nixos.specialisation.v1": {},
 }"#;
 
         let from_json: Generation = serde_json::from_str(&json).unwrap();
@@ -113,7 +123,7 @@ mod tests {
     #[test]
     fn valid_v1_json_with_typed_extension() {
         let json = r#"{
-    "v1": {
+    "org.nixos.bootspec.v1": {
         "system": "x86_64-linux",
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
@@ -131,9 +141,9 @@ mod tests {
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
         "toplevel": "/nix/store/xxx-nixos-system-xxx",
-        "specialisation": {},
-        "extensions": { "org.test": { "key": "hello" } }
-    }
+    },
+    "org.nixos.specialisation.v1": {},
+    "org.test": { "key": "hello" }
 }"#;
 
         let from_json: Generation = serde_json::from_str(&json).unwrap();
@@ -189,7 +199,7 @@ mod tests {
     #[test]
     fn valid_v1_json_with_typed_optional_extension_fields_and_empty_object() {
         let json = r#"{
-    "v1": {
+    "org.nixos.bootspec.v1": {
         "system": "x86_64-linux",
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
@@ -206,10 +216,9 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-        "toplevel": "/nix/store/xxx-nixos-system-xxx",
-        "specialisation": {},
-        "extensions": {}
-    }
+        "toplevel": "/nix/store/xxx-nixos-system-xxx"
+    },
+    "org.nixos.specialisation.v1": {},
 }"#;
 
         let from_json: Generation = serde_json::from_str(&json).unwrap();
@@ -248,7 +257,7 @@ mod tests {
     #[test]
     fn invalid_v1_json_with_null_extension() {
         let json = r#"{
-    "v1": {
+    "org.nixos.bootspec.v1": {
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
         "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
@@ -265,9 +274,9 @@ mod tests {
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
         "toplevel": "/nix/store/xxx-nixos-system-xxx",
-        "specialisation": {},
-        "extensions": null
-    }
+    },
+    "org.nixos.specialisation.v1": {},
+    "org.test": null
 }"#;
         let json_err = serde_json::from_str::<Generation>(&json).unwrap_err();
         assert!(json_err.to_string().contains("expected a map"));
@@ -276,7 +285,7 @@ mod tests {
     #[test]
     fn valid_v1_json_without_extension() {
         let json = r#"{
-    "v1": {
+    "org.nixos.bootspec.v1": {
         "system": "x86_64-linux",
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
@@ -294,8 +303,8 @@ mod tests {
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
         "toplevel": "/nix/store/xxx-nixos-system-xxx",
-        "specialisation": {}
-    }
+    },
+    "org.nixos.specialisation.v1": {},
 }"#;
 
         let from_json: Generation = serde_json::from_str(&json).unwrap();
@@ -349,8 +358,7 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-        "toplevel": "/nix/store/xxx-nixos-system-xxx",
-        "extensions": {}
+        "toplevel": "/nix/store/xxx-nixos-system-xxx"
     }
 }"#;
 
@@ -388,7 +396,7 @@ mod tests {
     #[test]
     fn invalid_v1_json_with_null_specialisation() {
         let json = r#"{
-    "v1": {
+    "org.nixos.bootspec.v1": {
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
         "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
@@ -405,8 +413,8 @@ mod tests {
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
         "toplevel": "/nix/store/xxx-nixos-system-xxx",
-        "specialisation": null
-    }
+    },
+    "org.nixos.specialisation.v1": null
 }"#;
 
         let json_err = serde_json::from_str::<Generation>(&json).unwrap_err();
@@ -417,7 +425,7 @@ mod tests {
     fn invalid_json_invalid_version() {
         let json = format!(
             r#"{{
-    "v{}": {{
+    "org.nixos.bootspec.v{}": {{
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
         "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
@@ -435,8 +443,10 @@ mod tests {
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
         "toplevel": "/nix/store/xxx-nixos-system-xxx",
         "specialisation": {{}}
-    }}
+    }},
+    "org.nixos.specialisation.v{}": {{}}
 }}"#,
+            SCHEMA_VERSION + 1,
             SCHEMA_VERSION + 1
         );
 

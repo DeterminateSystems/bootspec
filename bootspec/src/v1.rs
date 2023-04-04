@@ -4,13 +4,10 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{Result, SpecialisationName, SystemConfigurationRoot};
+use crate::{Result, SystemConfigurationRoot};
 
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
-
-/// User-specified extension data
-pub type Extension = HashMap<String, serde_json::Value>;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -36,14 +33,8 @@ pub struct GenerationV1 {
     pub initrd_secrets: Option<PathBuf>,
     /// System double, e.g. x86_64-linux, for the system closure
     pub system: String,
-    /// Mapping of specialisation names to their boot.json
-    #[serde(default = "HashMap::new")]
-    pub specialisation: HashMap<SpecialisationName, GenerationV1>,
     /// config.system.build.toplevel path
-    pub toplevel: SystemConfigurationRoot,
-    /// User extensions for this specification
-    #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty")]
-    pub extensions: HashMap<String, Extension>,
+    pub toplevel: SystemConfigurationRoot
 }
 
 impl GenerationV1 {
@@ -51,29 +42,6 @@ impl GenerationV1 {
     ///
     /// This is useful when used on generations that do not have a bootspec attached to it.
     pub fn synthesize(generation: &Path) -> Result<GenerationV1> {
-        let mut toplevelspec = GenerationV1::describe_system(generation)?;
-
-        if let Ok(specialisations) = fs::read_dir(generation.join("specialisation")) {
-            for spec in specialisations.map(|res| res.map(|e| e.path())) {
-                let spec = spec?;
-                let name = spec
-                    .file_name()
-                    .ok_or("Could not get name of specialisation dir")?
-                    .to_str()
-                    .ok_or("Specialisation dir name was invalid UTF8")?;
-                let toplevel = fs::canonicalize(generation.join("specialisation").join(name))?;
-
-                toplevelspec.specialisation.insert(
-                    SpecialisationName(name.to_string()),
-                    GenerationV1::describe_system(&toplevel)?,
-                );
-            }
-        }
-
-        Ok(toplevelspec)
-    }
-
-    fn describe_system(generation: &Path) -> Result<GenerationV1> {
         let generation = generation
             .canonicalize()
             .map_err(|e| format!("Failed to canonicalize generation dir:\n{}", e))?;
@@ -131,9 +99,7 @@ impl GenerationV1 {
             initrd,
             initrd_secrets,
             system,
-            toplevel: SystemConfigurationRoot(generation),
-            specialisation: HashMap::new(),
-            extensions: HashMap::new(),
+            toplevel: SystemConfigurationRoot(generation)
         })
     }
 }
@@ -141,7 +107,7 @@ impl GenerationV1 {
 #[cfg(test)]
 mod tests {
     use std::path::PathBuf;
-    use std::{collections::HashMap, fs};
+    use std::fs;
 
     use super::{GenerationV1, SystemConfigurationRoot};
     use crate::JSON_FILENAME;
@@ -252,9 +218,7 @@ mod tests {
                 init: generation.join("init"),
                 initrd: Some(generation.join("initrd")),
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
-                specialisation: HashMap::new(),
                 toplevel: SystemConfigurationRoot(generation),
-                extensions: HashMap::new()
             }
         );
     }
@@ -323,9 +287,7 @@ mod tests {
                 init: generation.join("init"),
                 initrd: Some(generation.join("initrd")),
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
-                specialisation: HashMap::new(),
-                toplevel: SystemConfigurationRoot(generation),
-                extensions: HashMap::new()
+                toplevel: SystemConfigurationRoot(generation)
             }
         );
     }
