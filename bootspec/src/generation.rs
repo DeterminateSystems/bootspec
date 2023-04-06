@@ -138,7 +138,6 @@ mod tests {
 }"#;
 
         let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();
-        panic!("\n{:#?}\n", from_json);
 
         let bootspec = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),

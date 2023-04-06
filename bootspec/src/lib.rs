@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::generation::Generation;
 
+mod deser;
 pub mod generation;
 pub mod v1;
 
@@ -42,6 +43,7 @@ pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
 
 /// The current bootspec schema.
 // FIXME: manually implement ser/de because otherwise, everything from the generation will exist as an extension too
+// FIXME: https://github.com/serde-rs/serde/issues/2200
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BootJson {
     #[serde(flatten)]
@@ -49,6 +51,7 @@ pub struct BootJson {
     #[serde(
         default = "HashMap::new",
         skip_serializing_if = "HashMap::is_empty",
+        deserialize_with = "deser::temp_serde_fix",
         flatten
     )]
     pub extensions: HashMap<String, Extension>,
