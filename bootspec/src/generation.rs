@@ -1,20 +1,10 @@
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
-use crate::{v1, Extension, SpecialisationName};
+use crate::v1;
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct BootGeneration {
-    #[serde(flatten)]
-    pub generation: Generation,
-    #[serde(default = "HashMap::new", rename = "org.nixos.specialisation.v1")]
-    pub specialisations: HashMap<SpecialisationName, Generation>,
-    #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty", flatten)]
-    pub extensions: HashMap<String, Extension>
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[non_exhaustive]
+#[serde(untagged)]
 /// An enum of all available bootspec versions.
 ///
 /// This enum should be used when attempting to serialize or deserialize a bootspec document, in
@@ -23,7 +13,6 @@ pub struct BootGeneration {
 /// This enum is nonexhaustive, because there may be future versions added at any point, and tools
 /// should explicitly handle them (e.g. by noting they're currently unsupported).
 pub enum Generation {
-    #[serde(rename="org.nixos.bootspec.v1")]
     V1(v1::GenerationV1),
 }
 
@@ -90,7 +79,7 @@ mod tests {
         let from_json: Generation = serde_json::from_str(&json).unwrap();
         let Generation::V1(from_json) = from_json;
 
-        let expected = crate::v1::GenerationV1 {
+        let expected = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -149,7 +138,7 @@ mod tests {
         let from_json: Generation = serde_json::from_str(&json).unwrap();
         let Generation::V1(from_json) = from_json;
 
-        let expected = crate::v1::GenerationV1 {
+        let expected = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -224,7 +213,7 @@ mod tests {
         let from_json: Generation = serde_json::from_str(&json).unwrap();
         let Generation::V1(from_json) = from_json;
 
-        let expected = crate::v1::GenerationV1 {
+        let expected = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -310,7 +299,7 @@ mod tests {
         let from_json: Generation = serde_json::from_str(&json).unwrap();
         let Generation::V1(from_json) = from_json;
 
-        let expected = crate::v1::GenerationV1 {
+        let expected = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -365,7 +354,7 @@ mod tests {
         let from_json: Generation = serde_json::from_str(&json).unwrap();
         let Generation::V1(from_json) = from_json;
 
-        let expected = crate::v1::GenerationV1 {
+        let expected = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
