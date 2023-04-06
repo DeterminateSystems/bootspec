@@ -52,10 +52,9 @@ mod tests {
     }
 
     #[test]
-    fn valid_v1_json() {
+    fn valid_v1_json_basic() {
         let json = r#"{
     "org.nixos.bootspec.v1": {
-        "system": "x86_64-linux",
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
         "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
@@ -71,15 +70,16 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
+        "system": "x86_64-linux",
         "toplevel": "/nix/store/xxx-nixos-system-xxx"
     },
-    "org.nixos.specialisation.v1": {},
+    "org.nixos.specialisation.v1": {}
 }"#;
 
         let from_json: Generation = serde_json::from_str(&json).unwrap();
         let Generation::V1(from_json) = from_json;
 
-        let expected = crate::v1::BootSpecV1 {
+        let bootspec = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -101,9 +101,11 @@ mod tests {
             initrd_secrets: Some(PathBuf::from(
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
-            specialisation: HashMap::new(),
-            extensions: HashMap::new(),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
+        };
+        let expected = crate::v1::GenerationV1 {
+            bootspec,
+            specialisations: HashMap::new(),
         };
 
         assert_eq!(from_json, expected);
@@ -113,7 +115,6 @@ mod tests {
     fn valid_v1_json_with_typed_extension() {
         let json = r#"{
     "org.nixos.bootspec.v1": {
-        "system": "x86_64-linux",
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
         "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
@@ -129,16 +130,17 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-        "toplevel": "/nix/store/xxx-nixos-system-xxx",
+        "system": "x86_64-linux",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx"
     },
     "org.nixos.specialisation.v1": {},
     "org.test": { "key": "hello" }
 }"#;
 
-        let from_json: Generation = serde_json::from_str(&json).unwrap();
-        let Generation::V1(from_json) = from_json;
+        let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();
+        panic!("\n{:#?}\n", from_json);
 
-        let expected = crate::v1::BootSpecV1 {
+        let bootspec = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -160,12 +162,18 @@ mod tests {
             initrd_secrets: Some(PathBuf::from(
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
-            specialisation: HashMap::new(),
+            toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
+        };
+        let generation = crate::v1::GenerationV1 {
+            bootspec,
+            specialisations: HashMap::new(),
+        };
+        let expected = crate::BootJson {
+            generation: crate::Generation::V1(generation),
             extensions: HashMap::from([(
                 "org.test".into(),
                 HashMap::from([("key".into(), serde_json::to_value("hello").unwrap())]),
             )]),
-            toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
 
         let from_extension: TestExtension = Deserialize::deserialize(
@@ -189,7 +197,6 @@ mod tests {
     fn valid_v1_json_with_typed_optional_extension_fields_and_empty_object() {
         let json = r#"{
     "org.nixos.bootspec.v1": {
-        "system": "x86_64-linux",
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
         "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
@@ -205,15 +212,15 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
+        "system": "x86_64-linux",
         "toplevel": "/nix/store/xxx-nixos-system-xxx"
     },
     "org.nixos.specialisation.v1": {},
 }"#;
 
-        let from_json: Generation = serde_json::from_str(&json).unwrap();
-        let Generation::V1(from_json) = from_json;
+        let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();
 
-        let expected = crate::v1::BootSpecV1 {
+        let bootspec = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -235,9 +242,15 @@ mod tests {
             initrd_secrets: Some(PathBuf::from(
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
-            specialisation: HashMap::new(),
-            extensions: HashMap::new(),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
+        };
+        let generation = crate::v1::GenerationV1 {
+            bootspec,
+            specialisations: HashMap::new(),
+        };
+        let expected = crate::BootJson {
+            generation: crate::Generation::V1(generation),
+            extensions: HashMap::new(),
         };
 
         assert_eq!(from_json, expected);
@@ -262,12 +275,13 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-        "toplevel": "/nix/store/xxx-nixos-system-xxx",
+        "system": "x86_64-linux",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx"
     },
     "org.nixos.specialisation.v1": {},
     "org.test": null
 }"#;
-        let json_err = serde_json::from_str::<Generation>(&json).unwrap_err();
+        let json_err = serde_json::from_str::<crate::BootJson>(&json).unwrap_err();
         assert!(json_err.to_string().contains("expected a map"));
     }
 
@@ -275,7 +289,6 @@ mod tests {
     fn valid_v1_json_without_extension() {
         let json = r#"{
     "org.nixos.bootspec.v1": {
-        "system": "x86_64-linux",
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "initrd": "/nix/store/xxx-initrd-linux/initrd",
         "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
@@ -291,15 +304,15 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
+        "system": "x86_64-linux",
         "toplevel": "/nix/store/xxx-nixos-system-xxx",
     },
     "org.nixos.specialisation.v1": {},
 }"#;
 
-        let from_json: Generation = serde_json::from_str(&json).unwrap();
-        let Generation::V1(from_json) = from_json;
+        let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();
 
-        let expected = crate::v1::BootSpecV1 {
+        let bootspec = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -321,9 +334,15 @@ mod tests {
             initrd_secrets: Some(PathBuf::from(
                 "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
             )),
-            specialisation: HashMap::new(),
-            extensions: HashMap::new(),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
+        };
+        let generation = crate::v1::GenerationV1 {
+            bootspec,
+            specialisations: HashMap::new(),
+        };
+        let expected = crate::BootJson {
+            generation: crate::Generation::V1(generation),
+            extensions: HashMap::new(),
         };
 
         assert_eq!(from_json, expected);
@@ -332,8 +351,7 @@ mod tests {
     #[test]
     fn valid_v1_json_without_initrd_and_specialisation() {
         let json = r#"{
-    "v1": {
-        "system": "x86_64-linux",
+    "org.nixos.bootspec.v1": {
         "init": "/nix/store/xxx-nixos-system-xxx/init",
         "kernel": "/nix/store/xxx-linux/bzImage",
         "kernelParams": [
@@ -347,14 +365,14 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
+        "system": "x86_64-linux",
         "toplevel": "/nix/store/xxx-nixos-system-xxx"
     }
 }"#;
 
-        let from_json: Generation = serde_json::from_str(&json).unwrap();
-        let Generation::V1(from_json) = from_json;
+        let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();
 
-        let expected = crate::v1::BootSpecV1 {
+        let bootspec = crate::v1::BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -374,9 +392,15 @@ mod tests {
             init: PathBuf::from("/nix/store/xxx-nixos-system-xxx/init"),
             initrd: None,
             initrd_secrets: None,
-            specialisation: HashMap::new(),
-            extensions: HashMap::new(),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
+        };
+        let generation = crate::v1::GenerationV1 {
+            bootspec,
+            specialisations: HashMap::new(),
+        };
+        let expected = crate::BootJson {
+            generation: crate::Generation::V1(generation),
+            extensions: HashMap::new(),
         };
 
         assert_eq!(from_json, expected);
@@ -401,12 +425,13 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-        "toplevel": "/nix/store/xxx-nixos-system-xxx",
+        "system": "x86_64-linux",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx"
     },
     "org.nixos.specialisation.v1": null
 }"#;
 
-        let json_err = serde_json::from_str::<Generation>(&json).unwrap_err();
+        let json_err = serde_json::from_str::<crate::v1::GenerationV1>(&json).unwrap_err();
         assert!(json_err.to_string().contains("expected a map"));
     }
 
@@ -430,8 +455,8 @@ mod tests {
             "loglevel=4"
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
-        "toplevel": "/nix/store/xxx-nixos-system-xxx",
-        "specialisation": {{}}
+        "system": "x86_64-linux",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx"
     }},
     "org.nixos.specialisation.v{}": {{}}
 }}"#,
@@ -440,6 +465,6 @@ mod tests {
         );
 
         let json_err = serde_json::from_str::<Generation>(&json).unwrap_err();
-        assert!(json_err.to_string().contains("unknown variant"));
+        assert!(json_err.to_string().contains("did not match any variant"));
     }
 }
