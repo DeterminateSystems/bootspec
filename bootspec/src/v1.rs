@@ -12,7 +12,7 @@ pub const SCHEMA_VERSION: u64 = 1;
 /// A mapping of V1 bootspec specialisations.
 ///
 /// This structure represents the contents of the `org.nixos.specialisations.v1` key.
-pub type SpecialisationsV1 = HashMap<SpecialisationName, BootSpecV1>;
+pub type SpecialisationsV1 = HashMap<SpecialisationName, GenerationV1>;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 /// A V1 bootspec generation.
@@ -52,7 +52,7 @@ impl GenerationV1 {
 
                 specialisations.insert(
                     SpecialisationName(name.to_string()),
-                    BootSpecV1::synthesize(&toplevel)?,
+                    Self::synthesize(&toplevel)?,
                 );
             }
         }
