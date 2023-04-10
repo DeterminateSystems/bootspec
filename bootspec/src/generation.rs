@@ -25,19 +25,6 @@ impl Generation {
             V1(_) => v1::SCHEMA_VERSION,
         }
     }
-
-    #[doc(hidden)]
-    /// This is very hacky, but necessary because serde does not consume fields in flattened enums.
-    /// See: https://github.com/serde-rs/serde/issues/2200
-    pub(crate) fn field_names() -> Vec<&'static str> {
-        let mut field_names = vec![];
-
-        field_names.extend(serde_aux::serde_introspection::serde_introspect::<
-            v1::GenerationV1,
-        >());
-
-        field_names
-    }
 }
 
 #[cfg(test)]
@@ -227,7 +214,7 @@ mod tests {
         "system": "x86_64-linux",
         "toplevel": "/nix/store/xxx-nixos-system-xxx"
     },
-    "org.nixos.specialisation.v1": {},
+    "org.nixos.specialisation.v1": {}
 }"#;
 
         let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();
@@ -317,9 +304,9 @@ mod tests {
         ],
         "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
         "system": "x86_64-linux",
-        "toplevel": "/nix/store/xxx-nixos-system-xxx",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx"
     },
-    "org.nixos.specialisation.v1": {},
+    "org.nixos.specialisation.v1": {}
 }"#;
 
         let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();

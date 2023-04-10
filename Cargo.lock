@@ -13,7 +13,6 @@ name = "bootspec"
 version = "0.1.0"
 dependencies = [
  "serde",
- "serde-aux",
  "serde_json",
  "tempfile",
 ]
@@ -260,16 +259,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb7d1f0d3021d347a83e556fc4683dea2ea09d87bccdf88ff5c12545d89d5efb"
 dependencies = [
  "serde_derive",
-]
-
-[[package]]
-name = "serde-aux"
-version = "4.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3dfe1b7eb6f9dcf011bd6fad169cdeaae75eda0d61b1a99a3f015b41b0cae39"
-dependencies = [
- "serde",
- "serde_json",
 ]
 
 [[package]]

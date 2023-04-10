@@ -28,7 +28,7 @@ pub type SpecialisationsV1 = HashMap<SpecialisationName, BootSpecV1>;
 pub struct GenerationV1 {
     #[serde(rename = "org.nixos.bootspec.v1")]
     pub bootspec: BootSpecV1,
-    #[serde(rename = "org.nixos.specialisation.v1")]
+    #[serde(rename = "org.nixos.specialisation.v1", default = "HashMap::new")]
     pub specialisations: SpecialisationsV1,
 }
 

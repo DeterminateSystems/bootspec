@@ -29,13 +29,15 @@ pub struct SystemConfigurationRoot(pub PathBuf);
 
 /// The bootspec schema filename.
 pub const JSON_FILENAME: &str = "boot.json";
-/// The type for generic extensions
+/// The type for a generic extensions.
 pub type Extension = HashMap<String, serde_json::Value>;
+/// The type for a collection of generic extensions.
+pub type Extensions = HashMap<String, Extension>;
 
 // !!! IMPORTANT: KEEP `BootSpec`, `Specialisations`, and `SCHEMA_VERSION` IN SYNC !!!
-// The current bootspec generation type
+// The current bootspec generation type.
 pub type BootSpec = v1::GenerationV1;
-/// The current specialisations type
+/// The current specialisations type.
 pub type Specialisations = v1::SpecialisationsV1;
 /// The current bootspec schema version.
 pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
@@ -44,10 +46,7 @@ pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
 mod deser;
 
 /// The current bootspec schema.
-// FIXME: manually implement ser/de because otherwise, everything from the generation will exist as an extension too
-// FIXME: https://github.com/serde-rs/serde/issues/2200
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-#[cfg_attr(all(), derive(Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BootJson {
     #[serde(flatten)]
     // TODO: should this be a vec? add a v2 and test how this works
@@ -55,10 +54,10 @@ pub struct BootJson {
     #[serde(
         default = "HashMap::new",
         skip_serializing_if = "HashMap::is_empty",
-        deserialize_with = "deser::s::temp_serde_fix",
+        deserialize_with = "deser::temp_serde_fix",
         flatten
     )]
-    pub extensions: HashMap<String, Extension>,
+    pub extensions: Extensions,
 }
 
 impl BootJson {
