@@ -96,7 +96,7 @@ mod tests {
 }"#;
 
         let from_json: Generation = serde_json::from_str(&json).unwrap();
-        let Generation::V1(from_json) = from_json else { unreachable!(); };
+        let Generation::V1(from_json) = from_json;
 
         let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
