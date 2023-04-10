@@ -25,6 +25,19 @@ impl Generation {
             V1(_) => v1::SCHEMA_VERSION,
         }
     }
+
+    #[doc(hidden)]
+    /// This is very hacky, but necessary because serde does not consume fields in flattened enums.
+    /// See: https://github.com/serde-rs/serde/issues/2200
+    pub(crate) fn field_names() -> Vec<&'static str> {
+        let mut field_names = vec![];
+
+        field_names.extend(serde_aux::serde_introspection::serde_introspect::<
+            v1::GenerationV1,
+        >());
+
+        field_names
+    }
 }
 
 #[cfg(test)]
