@@ -42,6 +42,7 @@ mod tests {
     use serde::{Deserialize, Serialize};
 
     use super::Generation;
+    use crate::SpecialisationName;
     use crate::{
         v1::{BootSpecV1, GenerationV1},
         BootJson, SystemConfigurationRoot, SCHEMA_VERSION,
@@ -65,9 +66,16 @@ mod tests {
         // have a valid `org.nixos.specialisation.v1`).
         // https://github.com/NixOS/rfcs/blob/02458c2ecc9f915b143b1923213b40be8ac02a96/rfcs/0125-bootspec.md#bootspec-format-v1
         let rfc_json = include_str!("../rfc0125_spec.json");
-        let from_json = serde_json::from_str::<Generation>(&rfc_json);
-        assert!(from_json.is_ok());
-        assert_eq!(from_json.unwrap().version(), 1);
+        let from_json = serde_json::from_str::<Generation>(&rfc_json).unwrap();
+        assert_eq!(from_json.version(), 1);
+
+        let Generation::V1(from_json) = from_json;
+        let keys = from_json
+            .specialisations
+            .keys()
+            .map(ToOwned::to_owned)
+            .collect::<Vec<_>>();
+        assert!(keys.contains(&SpecialisationName(String::from("<name>"))));
     }
 
     #[test]
