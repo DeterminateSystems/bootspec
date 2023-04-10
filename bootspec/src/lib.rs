@@ -62,6 +62,10 @@ impl BootJson {
     /// specification version defined in this crate ([`SCHEMA_VERSION`]).
     ///
     /// See also [`BootJson::synthesize_version`].
+    ///
+    /// ## Warnings
+    ///
+    /// Extensions will not be synthesized and will be an empty [`HashMap`].
     pub fn synthesize_latest(generation_path: &Path) -> Result<BootJson> {
         Self::synthesize_version(generation_path, SCHEMA_VERSION)
     }
@@ -70,6 +74,10 @@ impl BootJson {
     ///
     /// This is useful when used on generations that do not have a bootspec attached to it.
     /// This will not synthesize arbitrary extensions.
+    ///
+    /// ## Warnings
+    ///
+    /// Extensions will not be synthesized and will be an empty [`HashMap`].
     pub fn synthesize_version(generation_path: &Path, version: u64) -> Result<BootJson> {
         let generation = match version {
             v1::SCHEMA_VERSION => {
@@ -85,7 +93,6 @@ impl BootJson {
 
         Ok(BootJson {
             generation,
-            // Extensions will not be synthesized.
             extensions: HashMap::new(),
         })
     }
