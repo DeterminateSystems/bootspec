@@ -14,6 +14,8 @@ use crate::v1;
 #[non_exhaustive]
 #[serde(untagged)]
 pub enum Generation {
+    // WARNING: Add new versions to the _top_ of this list. Untagged enums in `serde` always
+    // deserialize to the first variant that succeeds.
     V1(v1::GenerationV1),
 }
 
@@ -91,7 +93,7 @@ mod tests {
 }"#;
 
         let from_json: Generation = serde_json::from_str(&json).unwrap();
-        let Generation::V1(from_json) = from_json;
+        let Generation::V1(from_json) = from_json else { unreachable!(); };
 
         let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),

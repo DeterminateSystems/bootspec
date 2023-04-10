@@ -28,7 +28,7 @@ fn cli() -> Result<()> {
     let out_path = args.out_path;
     let version = args.version;
 
-    let versioned_spec = BootJson::synthesize(&generation_dir, version)?;
+    let versioned_spec = BootJson::synthesize_version(&generation_dir, version)?;
 
     let pretty = serde_json::to_string_pretty(&versioned_spec)
         .map_err(|e| format!("Failed to make pretty JSON from bootspec:\n{}", e))?;
