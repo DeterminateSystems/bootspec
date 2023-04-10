@@ -32,12 +32,14 @@ mod tests {
     use std::collections::HashMap;
     use std::path::PathBuf;
 
-    use super::Generation;
-    use crate::SystemConfigurationRoot;
-    use crate::SCHEMA_VERSION;
-
     use serde::de::IntoDeserializer;
     use serde::{Deserialize, Serialize};
+
+    use super::Generation;
+    use crate::{
+        v1::{BootSpecV1, GenerationV1},
+        BootJson, SystemConfigurationRoot, SCHEMA_VERSION,
+    };
 
     #[derive(Debug, Deserialize, Serialize, PartialEq, Default)]
     struct TestExtension {
@@ -79,7 +81,7 @@ mod tests {
         let from_json: Generation = serde_json::from_str(&json).unwrap();
         let Generation::V1(from_json) = from_json;
 
-        let bootspec = crate::v1::BootSpecV1 {
+        let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -103,7 +105,7 @@ mod tests {
             )),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
-        let expected = crate::v1::GenerationV1 {
+        let expected = GenerationV1 {
             bootspec,
             specialisations: HashMap::new(),
         };
@@ -137,9 +139,9 @@ mod tests {
     "org.test": { "key": "hello" }
 }"#;
 
-        let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();
+        let from_json: BootJson = serde_json::from_str(&json).unwrap();
 
-        let bootspec = crate::v1::BootSpecV1 {
+        let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -163,12 +165,12 @@ mod tests {
             )),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
-        let generation = crate::v1::GenerationV1 {
+        let generation = GenerationV1 {
             bootspec,
             specialisations: HashMap::new(),
         };
-        let expected = crate::BootJson {
-            generation: crate::Generation::V1(generation),
+        let expected = BootJson {
+            generation: Generation::V1(generation),
             extensions: HashMap::from([(
                 "org.test".into(),
                 HashMap::from([("key".into(), serde_json::to_value("hello").unwrap())]),
@@ -217,9 +219,9 @@ mod tests {
     "org.nixos.specialisation.v1": {}
 }"#;
 
-        let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();
+        let from_json: BootJson = serde_json::from_str(&json).unwrap();
 
-        let bootspec = crate::v1::BootSpecV1 {
+        let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -243,12 +245,12 @@ mod tests {
             )),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
-        let generation = crate::v1::GenerationV1 {
+        let generation = GenerationV1 {
             bootspec,
             specialisations: HashMap::new(),
         };
-        let expected = crate::BootJson {
-            generation: crate::Generation::V1(generation),
+        let expected = BootJson {
+            generation: Generation::V1(generation),
             extensions: HashMap::new(),
         };
 
@@ -280,7 +282,7 @@ mod tests {
     "org.nixos.specialisation.v1": {},
     "org.test": null
 }"#;
-        let json_err = serde_json::from_str::<crate::BootJson>(&json).unwrap_err();
+        let json_err = serde_json::from_str::<BootJson>(&json).unwrap_err();
         assert!(json_err.to_string().contains("expected a map"));
     }
 
@@ -309,9 +311,9 @@ mod tests {
     "org.nixos.specialisation.v1": {}
 }"#;
 
-        let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();
+        let from_json: BootJson = serde_json::from_str(&json).unwrap();
 
-        let bootspec = crate::v1::BootSpecV1 {
+        let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -335,12 +337,12 @@ mod tests {
             )),
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
-        let generation = crate::v1::GenerationV1 {
+        let generation = GenerationV1 {
             bootspec,
             specialisations: HashMap::new(),
         };
-        let expected = crate::BootJson {
-            generation: crate::Generation::V1(generation),
+        let expected = BootJson {
+            generation: Generation::V1(generation),
             extensions: HashMap::new(),
         };
 
@@ -369,9 +371,9 @@ mod tests {
     }
 }"#;
 
-        let from_json: crate::BootJson = serde_json::from_str(&json).unwrap();
+        let from_json: BootJson = serde_json::from_str(&json).unwrap();
 
-        let bootspec = crate::v1::BootSpecV1 {
+        let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
@@ -393,12 +395,12 @@ mod tests {
             initrd_secrets: None,
             toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/xxx-nixos-system-xxx")),
         };
-        let generation = crate::v1::GenerationV1 {
+        let generation = GenerationV1 {
             bootspec,
             specialisations: HashMap::new(),
         };
-        let expected = crate::BootJson {
-            generation: crate::Generation::V1(generation),
+        let expected = BootJson {
+            generation: Generation::V1(generation),
             extensions: HashMap::new(),
         };
 
@@ -430,7 +432,7 @@ mod tests {
     "org.nixos.specialisation.v1": null
 }"#;
 
-        let json_err = serde_json::from_str::<crate::v1::GenerationV1>(&json).unwrap_err();
+        let json_err = serde_json::from_str::<GenerationV1>(&json).unwrap_err();
         assert!(json_err.to_string().contains("expected a map"));
     }
 
