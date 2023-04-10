@@ -21,18 +21,17 @@ fn cli() -> Result<()> {
 
     match serde_json::from_str::<BootJson>(&contents) {
         Ok(boot_json) => {
-            dbg!(&boot_json);
             let generation = boot_json.generation;
             writeln!(
                 io::stdout(),
-                "Bootspec document at '{}' IS a valid v{} document.",
+                "Bootspec document at '{}' DOES CONTAIN a valid v{} document.",
                 bootspec_path.display(),
                 generation.version()
-            )?
+            )?;
         }
         Err(err) => {
             return Err(format!(
-                "Bootspec document at '{}' IS NOT a valid document:\n{}",
+                "Bootspec document at '{}' DOES NOT CONTAIN a valid document:\n{}",
                 bootspec_path.display(),
                 err
             )
