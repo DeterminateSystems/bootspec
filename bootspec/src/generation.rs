@@ -1,10 +1,8 @@
+//! Provides a helper enum for deserializing from all available bootspec versions.
 use serde::{Deserialize, Serialize};
 
 use crate::v1;
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
-#[non_exhaustive]
-#[serde(untagged)]
 /// An enum of all available bootspec versions.
 ///
 /// This enum should be used when attempting to serialize or deserialize a bootspec document, in
@@ -12,6 +10,9 @@ use crate::v1;
 ///
 /// This enum is nonexhaustive, because there may be future versions added at any point, and tools
 /// should explicitly handle them (e.g. by noting they're currently unsupported).
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[non_exhaustive]
+#[serde(untagged)]
 pub enum Generation {
     V1(v1::GenerationV1),
 }

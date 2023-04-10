@@ -1,3 +1,4 @@
+//! The V1 bootspec format.
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -14,7 +15,6 @@ pub const SCHEMA_VERSION: u64 = 1;
 /// This structure represents the contents of the `org.nixos.specialisations.v1` key.
 pub type SpecialisationsV1 = HashMap<SpecialisationName, GenerationV1>;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 /// A V1 bootspec generation.
 ///
 /// This structure represents an entire V1 generation (i.e. it includes the `org.nixos.bootspec.v1`
@@ -25,6 +25,7 @@ pub type SpecialisationsV1 = HashMap<SpecialisationName, GenerationV1>;
 /// Do not attempt to deserialize this struct from a bootspec document, as it does not enforce
 /// versioning. You want to use the [`crate::generation::Generation`] enum for both
 /// serialization and deserialization.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct GenerationV1 {
     #[serde(rename = "org.nixos.bootspec.v1")]
     pub bootspec: BootSpecV1,
@@ -33,7 +34,7 @@ pub struct GenerationV1 {
 }
 
 impl GenerationV1 {
-    /// Synthesize a [`GenerationV1`] struct from the path to a generation.
+    /// Synthesize a [`GenerationV1`] struct from the path to a NixOS generation.
     ///
     /// This is useful when used on generations that do not have a bootspec attached to it.
     pub fn synthesize(generation_path: &Path) -> Result<Self> {
@@ -64,11 +65,11 @@ impl GenerationV1 {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
 /// A V1 bootspec toplevel.
 ///
 /// This structure represents the contents of the `org.nixos.bootspec.v1` key.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct BootSpecV1 {
     /// Label for the system closure
     pub label: String,
