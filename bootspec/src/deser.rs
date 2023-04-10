@@ -39,7 +39,7 @@ impl<'de> Visitor<'de> for BootSpecExtensionsVisitor {
     }
 }
 
-pub fn temp_serde_fix<'de, D>(deserializer: D) -> Result<Extensions, D::Error>
+pub fn skip_generation_fields<'de, D>(deserializer: D) -> Result<Extensions, D::Error>
 where
     D: Deserializer<'de>,
 {

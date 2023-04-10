@@ -10,11 +10,6 @@ use crate::{Result, SpecialisationName, SystemConfigurationRoot};
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
 
-/// A mapping of V1 bootspec specialisations.
-///
-/// This structure represents the contents of the `org.nixos.specialisations.v1` key.
-pub type SpecialisationsV1 = HashMap<SpecialisationName, GenerationV1>;
-
 /// A V1 bootspec generation.
 ///
 /// This structure represents an entire V1 generation (i.e. it includes the `org.nixos.bootspec.v1`
@@ -22,9 +17,8 @@ pub type SpecialisationsV1 = HashMap<SpecialisationName, GenerationV1>;
 ///
 /// ## Warnings
 ///
-/// Do not attempt to deserialize this struct from a bootspec document, as it does not enforce
-/// versioning. You want to use the [`crate::generation::Generation`] enum for both
-/// serialization and deserialization.
+/// If you attempt to deserialize using this struct, you will not get any information about
+/// user-provided extensions. For that, you must deserialize with [`crate::BootJson`].
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct GenerationV1 {
     #[serde(rename = "org.nixos.bootspec.v1")]
@@ -64,6 +58,11 @@ impl GenerationV1 {
         })
     }
 }
+
+/// A mapping of V1 bootspec specialisations.
+///
+/// This structure represents the contents of the `org.nixos.specialisations.v1` key.
+pub type SpecialisationsV1 = HashMap<SpecialisationName, GenerationV1>;
 
 /// A V1 bootspec toplevel.
 ///

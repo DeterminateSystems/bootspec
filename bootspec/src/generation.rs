@@ -5,17 +5,20 @@ use crate::v1;
 
 /// An enum of all available bootspec versions.
 ///
-/// This enum should be used when attempting to serialize or deserialize a bootspec document, in
-/// order to verify the contents match the version of the document.
-///
 /// This enum is nonexhaustive, because there may be future versions added at any point, and tools
 /// should explicitly handle them (e.g. by noting they're currently unsupported).
+///
+/// ## Warnings
+///
+/// If you attempt to deserialize using this struct, you will not get any information about
+/// user-provided extensions. For that, you must deserialize with [`crate::BootJson`].
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[non_exhaustive]
 #[serde(untagged)]
 pub enum Generation {
     // WARNING: Add new versions to the _top_ of this list. Untagged enums in `serde` always
-    // deserialize to the first variant that succeeds.
+    // deserialize to the first variant that succeeds, and new versions should succeed before old
+    // versions.
     V1(v1::GenerationV1),
 }
 

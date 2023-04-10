@@ -47,12 +47,11 @@ pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BootJson {
     #[serde(flatten)]
-    // TODO: should this be a vec? add a v2 and test how this works
     pub generation: Generation,
     #[serde(
         default = "HashMap::new",
         skip_serializing_if = "HashMap::is_empty",
-        deserialize_with = "deser::temp_serde_fix",
+        deserialize_with = "deser::skip_generation_fields",
         flatten
     )]
     pub extensions: Extensions,
