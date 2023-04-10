@@ -1,5 +1,5 @@
 {
-  "v1": {
+  "org.nixos.bootspec.v1": {
     "label": "NixOS 21.11pre-git (Linux 5.10.81)",
     "kernel": "/nix/store/hprwry55jwyd71ng7v7c2rhk3a3z1im8-linux-5.10.81/bzImage",
     "kernelParams": [
@@ -10,8 +10,11 @@
     "initrd": "/nix/store/69bhfdfv77y0vclnlxqrd8pxjzbkz47w-initrd-linux-5.10.81/initrd",
     "initrdSecrets": "/nix/store/kgkjwhscv52r2y1ha1y19lb9h4j3lfrc-nixos-system-nixos-21.11pre-git/append-initrd-secrets",
     "system": "x86_64-linux",
-    "specialisation": {
-      "example": {
+    "toplevel": "/nix/store/kgkjwhscv52r2y1ha1y19lb9h4j3lfrc-nixos-system-nixos-21.11pre-git"
+  },
+  "org.nixos.specialisation.v1": {
+    "example": {
+      "org.nixos.bootspec.v1": {
         "label": "NixOS 21.11pre-git (Linux 5.10.81)",
         "kernel": "/nix/store/hprwry55jwyd71ng7v7c2rhk3a3z1im8-linux-5.10.81/bzImage",
         "kernelParams": [
@@ -22,10 +25,9 @@
         "initrd": "/nix/store/69bhfdfv77y0vclnlxqrd8pxjzbkz47w-initrd-linux-5.10.81/initrd",
         "initrdSecrets": "/nix/store/3w5kr91xq46638fd310q2sa9mjm6r6hn-nixos-system-nixos-21.11pre-git/append-initrd-secrets",
         "system": "x86_64-linux",
-        "specialisation": {},
         "toplevel": "/nix/store/3w5kr91xq46638fd310q2sa9mjm6r6hn-nixos-system-nixos-21.11pre-git"
-      }
-    },
-    "toplevel": "/nix/store/kgkjwhscv52r2y1ha1y19lb9h4j3lfrc-nixos-system-nixos-21.11pre-git"
+      },
+      "org.nixos.specialisation.v1": {}
+    }
   }
 }
