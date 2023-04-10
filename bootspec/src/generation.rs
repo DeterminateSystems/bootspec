@@ -42,10 +42,9 @@ mod tests {
     use serde::{Deserialize, Serialize};
 
     use super::Generation;
-    use crate::SpecialisationName;
     use crate::{
         v1::{BootSpecV1, GenerationV1},
-        BootJson, SystemConfigurationRoot, SCHEMA_VERSION,
+        BootJson, SpecialisationName, SystemConfigurationRoot, SCHEMA_VERSION,
     };
 
     #[derive(Debug, Deserialize, Serialize, PartialEq, Default)]
