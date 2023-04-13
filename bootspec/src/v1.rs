@@ -1,3 +1,4 @@
+//! The V1 bootspec format.
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -9,19 +10,66 @@ use crate::{Result, SpecialisationName, SystemConfigurationRoot};
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
 
-/// User-specified extension data
-pub type Extension = HashMap<String, serde_json::Value>;
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-/// V1 of the bootspec schema.
+/// A V1 bootspec generation.
+///
+/// This structure represents an entire V1 generation (i.e. it includes the `org.nixos.bootspec.v1`
+/// and `org.nixos.specialisation.v1` structures).
 ///
 /// ## Warnings
 ///
-/// Do not attempt to deserialize this struct from a bootspec document, as it does not enforce
-/// versioning. You want to use the [`crate::generation::Generation`] enum for both
-/// serialization and deserialization.
+/// If you attempt to deserialize using this struct, you will not get any information about
+/// user-provided extensions. For that, you must deserialize with [`crate::BootJson`].
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct GenerationV1 {
+    #[serde(rename = "org.nixos.bootspec.v1")]
+    pub bootspec: BootSpecV1,
+    #[serde(rename = "org.nixos.specialisation.v1", default = "HashMap::new")]
+    pub specialisations: SpecialisationsV1,
+}
+
+impl GenerationV1 {
+    /// Synthesize a [`GenerationV1`] struct from the path to a NixOS generation.
+    ///
+    /// This is useful when used on generations that do not have a bootspec attached to it.
+    pub fn synthesize(generation_path: &Path) -> Result<Self> {
+        let bootspec = BootSpecV1::synthesize(generation_path)?;
+
+        let mut specialisations = HashMap::new();
+        if let Ok(specialisations_dirs) = fs::read_dir(generation_path.join("specialisation")) {
+            for specialisation in specialisations_dirs.map(|res| res.map(|e| e.path())) {
+                let specialisation = specialisation?;
+                let name = specialisation
+                    .file_name()
+                    .ok_or("Could not get name of specialisation dir")?
+                    .to_str()
+                    .ok_or("Specialisation dir name was invalid UTF8")?;
+                let toplevel = fs::canonicalize(generation_path.join("specialisation").join(name))?;
+
+                specialisations.insert(
+                    SpecialisationName(name.to_string()),
+                    Self::synthesize(&toplevel)?,
+                );
+            }
+        }
+
+        Ok(Self {
+            bootspec,
+            specialisations,
+        })
+    }
+}
+
+/// A mapping of V1 bootspec specialisations.
+///
+/// This structure represents the contents of the `org.nixos.specialisations.v1` key.
+pub type SpecialisationsV1 = HashMap<SpecialisationName, GenerationV1>;
+
+/// A V1 bootspec toplevel.
+///
+/// This structure represents the contents of the `org.nixos.bootspec.v1` key.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct BootSpecV1 {
     /// Label for the system closure
     pub label: String,
     /// Path to kernel (bzImage) -- $toplevel/kernel
@@ -36,44 +84,12 @@ pub struct GenerationV1 {
     pub initrd_secrets: Option<PathBuf>,
     /// System double, e.g. x86_64-linux, for the system closure
     pub system: String,
-    /// Mapping of specialisation names to their boot.json
-    #[serde(default = "HashMap::new")]
-    pub specialisation: HashMap<SpecialisationName, GenerationV1>,
     /// config.system.build.toplevel path
     pub toplevel: SystemConfigurationRoot,
-    /// User extensions for this specification
-    #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty")]
-    pub extensions: HashMap<String, Extension>,
 }
 
-impl GenerationV1 {
-    /// Synthesize a [`GenerationV1`] struct from the path to a generation.
-    ///
-    /// This is useful when used on generations that do not have a bootspec attached to it.
-    pub fn synthesize(generation: &Path) -> Result<GenerationV1> {
-        let mut toplevelspec = GenerationV1::describe_system(generation)?;
-
-        if let Ok(specialisations) = fs::read_dir(generation.join("specialisation")) {
-            for spec in specialisations.map(|res| res.map(|e| e.path())) {
-                let spec = spec?;
-                let name = spec
-                    .file_name()
-                    .ok_or("Could not get name of specialisation dir")?
-                    .to_str()
-                    .ok_or("Specialisation dir name was invalid UTF8")?;
-                let toplevel = fs::canonicalize(generation.join("specialisation").join(name))?;
-
-                toplevelspec.specialisation.insert(
-                    SpecialisationName(name.to_string()),
-                    GenerationV1::describe_system(&toplevel)?,
-                );
-            }
-        }
-
-        Ok(toplevelspec)
-    }
-
-    fn describe_system(generation: &Path) -> Result<GenerationV1> {
+impl BootSpecV1 {
+    pub(crate) fn synthesize(generation: &Path) -> Result<Self> {
         let generation = generation
             .canonicalize()
             .map_err(|e| format!("Failed to canonicalize generation dir:\n{}", e))?;
@@ -123,7 +139,7 @@ impl GenerationV1 {
             None
         };
 
-        Ok(GenerationV1 {
+        Ok(Self {
             label: format!("NixOS {} (Linux {})", system_version, kernel_version),
             kernel,
             kernel_params,
@@ -132,18 +148,16 @@ impl GenerationV1 {
             initrd_secrets,
             system,
             toplevel: SystemConfigurationRoot(generation),
-            specialisation: HashMap::new(),
-            extensions: HashMap::new(),
         })
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
     use std::path::PathBuf;
-    use std::{collections::HashMap, fs};
 
-    use super::{GenerationV1, SystemConfigurationRoot};
+    use super::{BootSpecV1, SystemConfigurationRoot};
     use crate::JSON_FILENAME;
     use tempfile::TempDir;
 
@@ -240,11 +254,11 @@ mod tests {
             None,
             false,
         );
-        let spec = GenerationV1::synthesize(&generation).unwrap();
+        let spec = BootSpecV1::synthesize(&generation).unwrap();
 
         assert_eq!(
             spec,
-            GenerationV1 {
+            BootSpecV1 {
                 system,
                 label: "NixOS test-version-1 (Linux 1.1.1-test1)".into(),
                 kernel: generation.join("kernel-modules/bzImage"),
@@ -252,9 +266,7 @@ mod tests {
                 init: generation.join("init"),
                 initrd: Some(generation.join("initrd")),
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
-                specialisation: HashMap::new(),
                 toplevel: SystemConfigurationRoot(generation),
-                extensions: HashMap::new()
             }
         );
     }
@@ -283,7 +295,7 @@ mod tests {
             false,
         );
 
-        GenerationV1::synthesize(&generation).unwrap();
+        BootSpecV1::synthesize(&generation).unwrap();
     }
 
     #[test]
@@ -311,11 +323,11 @@ mod tests {
 
         fs::write(generation.join(JSON_FILENAME), "").expect("Failed to write to test generation");
 
-        let spec = GenerationV1::synthesize(&generation).unwrap();
+        let spec = BootSpecV1::synthesize(&generation).unwrap();
 
         assert_eq!(
             spec,
-            GenerationV1 {
+            BootSpecV1 {
                 system,
                 label: "NixOS test-version-3 (Linux 1.1.1-test3)".into(),
                 kernel: generation.join("kernel-modules/bzImage"),
@@ -323,9 +335,7 @@ mod tests {
                 init: generation.join("init"),
                 initrd: Some(generation.join("initrd")),
                 initrd_secrets: Some(generation.join("append-initrd-secrets")),
-                specialisation: HashMap::new(),
-                toplevel: SystemConfigurationRoot(generation),
-                extensions: HashMap::new()
+                toplevel: SystemConfigurationRoot(generation)
             }
         );
     }
@@ -357,6 +367,6 @@ mod tests {
         fs::write(generation.join("bootspec").join(JSON_FILENAME), "")
             .expect("Failed to write to test generation");
 
-        GenerationV1::synthesize(&generation).unwrap();
+        BootSpecV1::synthesize(&generation).unwrap();
     }
 }

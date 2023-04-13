@@ -1,5 +1,5 @@
 {
-  "v1": {
+  "org.nixos.bootspec.v1": {
     "label": "NixOS 17.03pre-git (Linux 4.9.18)",
     "kernel": "/nix/store/syp5ycwxv6yvfv2c9aq3wwqilxpnjvry-linux-4.9.18/bzImage",
     "kernelParams": [
@@ -9,7 +9,7 @@
     "initrd": "/nix/store/spbi6va9dmd41rg15nd9wxjj94097q49-initrd/initrd",
     "initrdSecrets": null,
     "system": "x86_64-linux",
-    "specialisation": {},
     "toplevel": "/nix/store/51yf3by1xpzawi30a1rny34gm1047vg8-nixos-system-nixos-17.03pre-git"
-  }
+  },
+  "org.nixos.specialisation.v1": {}
 }

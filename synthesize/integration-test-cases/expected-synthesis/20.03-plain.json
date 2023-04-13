@@ -1,5 +1,5 @@
 {
-  "v1": {
+  "org.nixos.bootspec.v1": {
     "label": "NixOS 20.03pre-git (Linux 5.4.33)",
     "kernel": "/nix/store/li3v6p9mqsspm0zgglzba2szab2zdmiv-linux-5.4.33/bzImage",
     "kernelParams": [
@@ -10,7 +10,7 @@
     "initrd": "/nix/store/1j7s94v0axvgwcv4s0ka56xmgvffdlc0-initrd-linux-5.4.33/initrd",
     "initrdSecrets": "/nix/store/l651p9fhdwkn7p49vawif8a2b4v1nsfl-nixos-system-nixos-20.03pre-git/append-initrd-secrets",
     "system": "x86_64-linux",
-    "specialisation": {},
     "toplevel": "/nix/store/l651p9fhdwkn7p49vawif8a2b4v1nsfl-nixos-system-nixos-20.03pre-git"
-  }
+  },
+  "org.nixos.specialisation.v1": {}
 }

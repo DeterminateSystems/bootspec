@@ -1,5 +1,5 @@
 {
-  "v1": {
+  "org.nixos.bootspec.v1": {
     "label": "NixOS 15.09pre-git (Linux 3.18.21)",
     "kernel": "/nix/store/vvabsbnxmh8nx6pq0bkk6vpsy5cqf9i5-linux-3.18.21/bzImage",
     "kernelParams": [
@@ -9,7 +9,7 @@
     "initrd": "/nix/store/gqdm8dk6my53kvn23r81win9vadjqv80-initrd/initrd",
     "initrdSecrets": null,
     "system": "x86_64-linux",
-    "specialisation": {},
     "toplevel": "/nix/store/fl1c8cclzzri16zimdfz8wp31w5yc7dp-nixos-15.09pre-git"
-  }
+  },
+  "org.nixos.specialisation.v1": {}
 }

@@ -21,15 +21,6 @@ jobs:
     - name: Build
       run: nix build -L
 
-  Spelling:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: DeterminateSystems/nix-installer-action@main
-    - uses: codespell-project/codespell-problem-matcher@v1
-    - name: Check Spelling
-      run: nix develop --command codespell --ignore-words-list crate,pullrequest,pullrequests,ser .
-
   NixFormatting:
     runs-on: ubuntu-latest
     steps:

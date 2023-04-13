@@ -2,8 +2,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
 
-use bootspec::generation::Generation;
-use bootspec::Result;
+use bootspec::{BootJson, Result};
 
 fn main() -> Result<()> {
     if let Err(e) = self::cli() {
@@ -20,16 +19,19 @@ fn cli() -> Result<()> {
 
     let contents = fs::read_to_string(&bootspec_path)?;
 
-    match serde_json::from_str::<Generation>(&contents) {
-        Ok(generation) => writeln!(
-            io::stdout(),
-            "Bootspec document at '{}' IS a valid v{} document.",
-            bootspec_path.display(),
-            generation.version()
-        )?,
+    match serde_json::from_str::<BootJson>(&contents) {
+        Ok(boot_json) => {
+            let generation = boot_json.generation;
+            writeln!(
+                io::stdout(),
+                "Bootspec document at '{}' DOES CONTAIN a valid v{} document.",
+                bootspec_path.display(),
+                generation.version()
+            )?;
+        }
         Err(err) => {
             return Err(format!(
-                "Bootspec document at '{}' IS NOT a valid document:\n{}",
+                "Bootspec document at '{}' DOES NOT CONTAIN a valid document:\n{}",
                 bootspec_path.display(),
                 err
             )
