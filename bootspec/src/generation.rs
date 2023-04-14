@@ -33,6 +33,17 @@ impl Generation {
     }
 }
 
+impl TryInto<v1::GenerationV1> for Generation {
+    type Error = String;
+
+    fn try_into(self) -> Result<v1::GenerationV1, Self::Error> {
+        match self {
+            Self::V1(gen) => Ok(gen),
+            _ => return Err(format!("Invalid schema version, expected version 1, got: {}", self.version()).to_string())
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
