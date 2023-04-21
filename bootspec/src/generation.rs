@@ -138,6 +138,81 @@ mod tests {
     }
 
     #[test]
+    fn valid_v1_json_with_specialisations() {
+        let json =r#"{
+          "org.nixos.bootspec.v1": {
+            "init": "/nix/store/dqfz68g6q2i4xs3knjqivxdj0wyglfvl-nixos-system-machine-23.05pre-git/init",
+            "initrd": "/nix/store/kqv7bsb9ji7yhknim3laviz37b6smn2b-initrd-linux-6.1.25/initrd",
+            "initrdSecrets": "/nix/store/f3kvscyhly5p8qybcmcgs0rj9lr3zplj-append-initrd-secrets/bin/append-initrd-secrets",
+            "kernel": "/nix/store/v5j1pn8nd7h3i0w6kg1fpsa0mlxcgda4-linux-6.1.25/bzImage",
+            "kernelParams": [
+              "console=ttyS0",
+              "panic=1",
+              "boot.panic_on_fail",
+              "clock=acpi_pm",
+              "loglevel=7",
+              "net.ifnames=0"
+            ],
+            "label": "NixOS Stoat 23.05pre-git (Linux 6.1.25)",
+            "system": "x86_64-linux",
+            "toplevel": "/nix/store/dqfz68g6q2i4xs3knjqivxdj0wyglfvl-nixos-system-machine-23.05pre-git"
+          },
+          "org.nixos.specialisation.v1": {
+            "variant": {
+              "init": "/nix/store/4z5jmmhdvhyrpw08ic05bsb3hnbf365w-nixos-system-machine-23.05pre-git/init",
+              "initrd": "/nix/store/kqv7bsb9ji7yhknim3laviz37b6smn2b-initrd-linux-6.1.25/initrd",
+              "initrdSecrets": "/nix/store/f3kvscyhly5p8qybcmcgs0rj9lr3zplj-append-initrd-secrets/bin/append-initrd-secrets",
+              "kernel": "/nix/store/v5j1pn8nd7h3i0w6kg1fpsa0mlxcgda4-linux-6.1.25/bzImage",
+              "kernelParams": [
+                "console=ttyS0",
+                "panic=1",
+                "boot.panic_on_fail",
+                "clock=acpi_pm",
+                "loglevel=7",
+                "net.ifnames=0"
+              ],
+              "label": "NixOS Stoat 23.05pre-git (Linux 6.1.25)",
+              "system": "x86_64-linux",
+              "toplevel": "/nix/store/4z5jmmhdvhyrpw08ic05bsb3hnbf365w-nixos-system-machine-23.05pre-git"
+            }
+          }
+        }"#;
+
+        let from_json: Generation = serde_json::from_str(&json).unwrap();
+        let Generation::V1(from_json) = from_json;
+
+        let bootspec = BootSpecV1 {
+            system: String::from("x86_64-linux"),
+            label: String::from("NixOS Stoat 23.05pre-git (Linux 6.1.25)"),
+            kernel: PathBuf::from("/nix/store/v5j1pn8nd7h3i0w6kg1fpsa0mlxcgda4-linux-6.1.25/bzImage"),
+            kernel_params: vec![
+                "console=ttyS0",
+                "panic=1",
+                "boot.panic_on_fail",
+                "clock=acpi_pm",
+                "loglevel=7",
+                "net.ifnames=0"
+            ]
+            .iter()
+            .map(ToString::to_string)
+            .collect(),
+            init: PathBuf::from("/nix/store/dqfz68g6q2i4xs3knjqivxdj0wyglfvl-nixos-system-machine-23.05pre-git/init"),
+            initrd: Some(PathBuf::from("/nix/store/kqv7bsb9ji7yhknim3laviz37b6smn2b-initrd-linux-6.1.25/initrd")),
+            initrd_secrets: Some(PathBuf::from(
+                    "/nix/store/f3kvscyhly5p8qybcmcgs0rj9lr3zplj-append-initrd-secrets/bin/append-initrd-secrets"
+            )),
+            toplevel: SystemConfigurationRoot(PathBuf::from("/nix/store/dqfz68g6q2i4xs3knjqivxdj0wyglfvl-nixos-system-machine-23.05pre-git/")),
+        };
+        let expected = GenerationV1 {
+            bootspec,
+            specialisations: HashMap::new(),
+        };
+
+        assert_eq!(from_json, expected);
+
+    }
+
+    #[test]
     fn valid_v1_json_with_typed_extension() {
         let json = r#"{
     "org.nixos.bootspec.v1": {
