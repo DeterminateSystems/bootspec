@@ -2,7 +2,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
 
-use bootspec::{BootJson, Result};
+use bootspec::BootJson;
 
 #[derive(clap::Parser)]
 struct Cli {
@@ -12,7 +12,7 @@ struct Cli {
     version: u64,
 }
 
-fn main() -> Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Err(e) = self::cli() {
         writeln!(io::stderr(), "{}", e)?;
 
@@ -22,7 +22,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn cli() -> Result<()> {
+fn cli() -> Result<(), Box<dyn std::error::Error>> {
     let args: Cli = clap::Parser::parse();
     let generation_dir = args.generation_dir;
     let out_path = args.out_path;

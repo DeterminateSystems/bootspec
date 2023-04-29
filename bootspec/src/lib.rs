@@ -1,18 +1,19 @@
 mod deser;
+pub mod error;
 pub mod generation;
 pub mod v1;
 
 use std::collections::HashMap;
-use std::error::Error;
 use std::fmt;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use crate::error::{BootspecError, SynthesizeError};
 use crate::generation::Generation;
 
 #[doc(hidden)]
-pub type Result<T, E = Box<dyn Error + Send + Sync + 'static>> = core::result::Result<T, E>;
+pub(crate) type Result<T, E = BootspecError> = core::result::Result<T, E>;
 
 /// A wrapper type describing the name of a NixOS specialisation.
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
@@ -85,9 +86,9 @@ impl BootJson {
                 Generation::V1(generation)
             }
             v => {
-                return Err(
-                    format!("Cannot synthesize for unsupported schema version {}", v).into(),
-                )
+                return Err(BootspecError::Synthesize(
+                    SynthesizeError::UnsupportedVersion(v),
+                ))
             }
         };
 
