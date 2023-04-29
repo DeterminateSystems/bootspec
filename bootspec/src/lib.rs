@@ -1,3 +1,7 @@
+mod deser;
+pub mod generation;
+pub mod v1;
+
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -6,10 +10,6 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::generation::Generation;
-
-mod deser;
-pub mod generation;
-pub mod v1;
 
 #[doc(hidden)]
 pub type Result<T, E = Box<dyn Error + Send + Sync + 'static>> = core::result::Result<T, E>;
