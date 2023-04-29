@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use crate::error::{BootspecError, SynthesizeError};
 use crate::{Result, SpecialisationName, SystemConfigurationRoot};
 
 /// The V1 bootspec schema version.
@@ -40,9 +41,9 @@ impl GenerationV1 {
                 let specialisation = specialisation?;
                 let name = specialisation
                     .file_name()
-                    .ok_or("Could not get name of specialisation dir")?
+                    .ok_or(BootspecError::InvalidFileName(specialisation.clone()))?
                     .to_str()
-                    .ok_or("Specialisation dir name was invalid UTF8")?;
+                    .ok_or(BootspecError::InvalidUtf8(specialisation.clone()))?;
                 let toplevel = fs::canonicalize(generation_path.join("specialisation").join(name))?;
 
                 specialisations.insert(
@@ -92,29 +93,54 @@ impl BootSpecV1 {
     pub(crate) fn synthesize(generation: &Path) -> Result<Self> {
         let generation = generation
             .canonicalize()
-            .map_err(|e| format!("Failed to canonicalize generation dir:\n{}", e))?;
+            .map_err(|e| SynthesizeError::Canonicalize {
+                path: generation.to_path_buf(),
+                err: e,
+            })?;
 
-        let system_version = fs::read_to_string(generation.join("nixos-version"))
-            .map_err(|e| format!("Failed to read system version:\n{}", e))?;
+        let version_file = generation.join("nixos-version");
+        let system_version =
+            fs::read_to_string(version_file.clone()).map_err(|e| SynthesizeError::ReadPath {
+                path: version_file,
+                err: e,
+            })?;
 
-        let system = fs::read_to_string(generation.join("system"))
-            .map_err(|e| format!("Failed to read system double:\n{}", e))?;
+        let system_file = generation.join("system");
+        let system =
+            fs::read_to_string(system_file.clone()).map_err(|e| SynthesizeError::ReadPath {
+                path: system_file,
+                err: e,
+            })?;
 
-        let kernel = fs::canonicalize(generation.join("kernel-modules/bzImage"))
-            .map_err(|e| format!("Failed to canonicalize the kernel:\n{}", e))?;
+        let kernel_file = generation.join("kernel-modules/bzImage");
+        let kernel =
+            fs::canonicalize(kernel_file.clone()).map_err(|e| SynthesizeError::Canonicalize {
+                path: kernel_file,
+                err: e,
+            })?;
 
-        let kernel_modules = fs::canonicalize(generation.join("kernel-modules/lib/modules"))
-            .map_err(|e| format!("Failed to canonicalize the kernel modules dir:\n{}", e))?;
-        let versioned_kernel_modules = fs::read_dir(kernel_modules)
-            .map_err(|e| format!("Failed to read kernel modules dir:\n{}", e))?
+        let kernel_modules_path = generation.join("kernel-modules/lib/modules");
+        let kernel_modules = fs::canonicalize(kernel_modules_path.clone()).map_err(|e| {
+            SynthesizeError::Canonicalize {
+                path: kernel_modules_path,
+                err: e,
+            }
+        })?;
+        let versioned_kernel_modules = fs::read_dir(kernel_modules.clone())
+            .map_err(|e| SynthesizeError::ReadPath {
+                path: kernel_modules.clone(),
+                err: e,
+            })?
             .map(|res| res.map(|e| e.path()))
             .next()
-            .ok_or("Could not find kernel version dir")??;
+            .ok_or(SynthesizeError::MissingKernelVersionDir(kernel_modules))??;
         let kernel_version = versioned_kernel_modules
             .file_name()
-            .ok_or("Could not get name of kernel version dir")?
+            .ok_or(BootspecError::InvalidFileName(
+                versioned_kernel_modules.clone(),
+            ))?
             .to_str()
-            .ok_or("Kernel version dir name was invalid UTF8")?;
+            .ok_or(BootspecError::InvalidUtf8(versioned_kernel_modules.clone()))?;
 
         let kernel_params: Vec<String> = fs::read_to_string(generation.join("kernel-params"))?
             .split(' ')
@@ -125,10 +151,12 @@ impl BootSpecV1 {
 
         let initrd_path = generation.join("initrd");
         let initrd = if initrd_path.exists() {
-            Some(
-                fs::canonicalize(initrd_path)
-                    .map_err(|e| format!("Failed to canonicalize the initrd:\n{}", e))?,
-            )
+            Some(fs::canonicalize(initrd_path.clone()).map_err(|e| {
+                SynthesizeError::Canonicalize {
+                    path: initrd_path,
+                    err: e,
+                }
+            })?)
         } else {
             None
         };
