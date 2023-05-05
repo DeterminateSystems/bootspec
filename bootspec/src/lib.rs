@@ -31,10 +31,8 @@ pub struct SystemConfigurationRoot(pub PathBuf);
 
 /// The bootspec schema filename.
 pub const JSON_FILENAME: &str = "boot.json";
-/// The type for a generic extensions.
-pub type Extension = HashMap<String, serde_json::Value>;
 /// The type for a collection of generic extensions.
-pub type Extensions = HashMap<String, Extension>;
+pub type Extensions = HashMap<String, serde_json::Value>;
 
 // !!! IMPORTANT: KEEP `BootSpec`, `Specialisations`, and `SCHEMA_VERSION` IN SYNC !!!
 /// The current bootspec generation type.
