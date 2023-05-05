@@ -301,6 +301,7 @@ mod tests {
         "toplevel": "/nix/store/xxx-nixos-system-xxx"
     },
     "org.nixos.specialisation.v1": {},
+    "org.test2": { "hi": null },
     "org.test": null
 }"#;
         let json_err = serde_json::from_str::<BootJson>(&json).unwrap_err();
