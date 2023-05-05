@@ -195,10 +195,7 @@ mod tests {
         };
         let expected = BootJson {
             generation: Generation::V1(generation),
-            extensions: HashMap::from([(
-                "org.test".into(),
-                HashMap::from([("key".into(), serde_json::to_value("hello").unwrap())]),
-            )]),
+            extensions: HashMap::from([("org.test".into(), serde_json::json!({ "key": "hello" }))]),
         };
 
         let from_extension: TestExtension = Deserialize::deserialize(
@@ -307,7 +304,9 @@ mod tests {
     "org.test": null
 }"#;
         let json_err = serde_json::from_str::<BootJson>(&json).unwrap_err();
-        assert!(json_err.to_string().contains("expected a map"));
+        assert!(json_err
+            .to_string()
+            .contains("org.test was null, but null extensions are not allowed"));
     }
 
     #[test]
