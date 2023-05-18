@@ -33,6 +33,18 @@ impl Generation {
     }
 }
 
+impl TryFrom<Generation> for v1::GenerationV1 {
+    type Error = crate::BootspecError;
+
+    fn try_from(value: Generation) -> Result<Self, Self::Error> {
+        let ret = match value {
+            Generation::V1(v1) => v1,
+        };
+
+        Ok(ret)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
@@ -491,5 +503,34 @@ mod tests {
 
         let json_err = serde_json::from_str::<Generation>(&json).unwrap_err();
         assert!(json_err.to_string().contains("did not match any variant"));
+    }
+
+    #[test]
+    fn valid_v1_json_to_generation_via_try_into() {
+        let json = r#"{
+    "org.nixos.bootspec.v1": {
+        "init": "/nix/store/xxx-nixos-system-xxx/init",
+        "initrd": "/nix/store/xxx-initrd-linux/initrd",
+        "initrdSecrets": "/nix/store/xxx-append-secrets/bin/append-initrd-secrets",
+        "kernel": "/nix/store/xxx-linux/bzImage",
+        "kernelParams": [
+            "amd_iommu=on",
+            "amd_iommu=pt",
+            "iommu=pt",
+            "kvm.ignore_msrs=1",
+            "kvm.report_ignored_msrs=0",
+            "udev.log_priority=3",
+            "systemd.unified_cgroup_hierarchy=1",
+            "loglevel=4"
+        ],
+        "label": "NixOS 21.11.20210810.dirty (Linux 5.15.30)",
+        "system": "x86_64-linux",
+        "toplevel": "/nix/store/xxx-nixos-system-xxx"
+    },
+    "org.nixos.specialisation.v1": {}
+}"#;
+
+        let from_json: BootJson = serde_json::from_str(&json).unwrap();
+        let _generation: GenerationV1 = from_json.generation.try_into().unwrap();
     }
 }
