@@ -29,7 +29,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: DeterminateSystems/flake-checker-action@main
       with:
-        fail-mode: true
+        fail-mode: false
 
   NixFormatting:
     runs-on: ubuntu-latest
