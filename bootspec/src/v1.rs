@@ -112,7 +112,11 @@ impl BootSpecV1 {
                 err: e,
             })?;
 
-        let kernel_file = generation.join("kernel-modules/bzImage");
+        let kernel_image_name = match system.as_str() {
+            "x86_64-linux" => "bzImage",
+            _ => "Image",
+        };
+        let kernel_file = generation.join(format!("kernel-modules/{}", kernel_image_name));
         let kernel =
             fs::canonicalize(kernel_file.clone()).map_err(|e| SynthesizeError::Canonicalize {
                 path: kernel_file,
