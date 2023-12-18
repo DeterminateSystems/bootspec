@@ -37,6 +37,7 @@ impl TryFrom<Generation> for v1::GenerationV1 {
     type Error = crate::BootspecError;
 
     fn try_from(value: Generation) -> Result<Self, Self::Error> {
+        #[allow(clippy::infallible_destructuring_match)]
         let ret = match value {
             Generation::V1(v1) => v1,
         };
