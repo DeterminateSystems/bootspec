@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: DeterminateSystems/nix-installer-action@main
-    - uses: DeterminateSystems/magic-nix-cache-action@main
+    - uses: DeterminateSystems/flakehub-cache-action@main
     - name: Check rustfmt
       run: nix develop --command cargo fmt -- --check
 
@@ -19,7 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: DeterminateSystems/nix-installer-action@main
-    - uses: DeterminateSystems/magic-nix-cache-action@main
+    - uses: DeterminateSystems/flakehub-cache-action@main
     - name: Build
       run: nix build -L
 
@@ -38,7 +38,7 @@ jobs:
       with:
         fetch-depth: 0
     - uses: DeterminateSystems/nix-installer-action@main
-    - uses: DeterminateSystems/magic-nix-cache-action@main
+    - uses: DeterminateSystems/flakehub-cache-action@main
     - name: Check nixpkgs-fmt formatting
       run: nix develop --command sh -c "git ls-files '*.nix' | xargs nixpkgs-fmt --check"
 
@@ -57,6 +57,6 @@ jobs:
       with:
         fetch-depth: 0
     - uses: DeterminateSystems/nix-installer-action@main
-    - uses: DeterminateSystems/magic-nix-cache-action@main
+    - uses: DeterminateSystems/flakehub-cache-action@main
     - name: Verify synthesize integration test still passes
       run: nix develop -c ./synthesize/integration-test-cases/verify.sh
