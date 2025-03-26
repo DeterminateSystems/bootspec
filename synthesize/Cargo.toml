@@ -9,6 +9,6 @@ edition = "2018"
 serde_json = "1.0.91"
 tempfile = "3.19.1"
 bootspec = { path = "../bootspec" }
-clap = { version = "4.5.32", features = ["derive"] }
+clap = { version = "4.5.33", features = ["derive"] }
 
 [dev-dependencies]
