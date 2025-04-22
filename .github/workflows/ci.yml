@@ -68,6 +68,8 @@ jobs:
     - uses: DeterminateSystems/flakehub-cache-action@main
     - name: Validate JSON Schema
       run: nix develop --command jv ./schema.json
+    - name: Validate JSON Schema against example
+      run: nix develop --command jv ./schema.json ./bootspec/rfc0125_spec.json
 
   SynthesizeIntegration:
     runs-on: ubuntu-latest

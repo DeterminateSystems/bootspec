@@ -32,11 +32,15 @@
       "required": ["init", "kernel", "kernelParams", "label", "system", "toplevel"],
       "properties": {
         "init": {
-          "type": "string",
+          "allOf": [
+            { "$ref": "#/$defs/NixStorePath" }
+          ],
           "description": "Nix store path to the stage-2 init, executed by initrd (if present)."
         },
         "kernel": {
-          "type": "string",
+          "allOf": [
+            { "$ref": "#/$defs/NixStorePath" }
+          ],
           "description": "Nix store path to the kernel image."
         },
         "kernelParams": {
@@ -69,18 +73,28 @@
           "examples": ["x86_64-linux", "aarch64-linux"]
         },
         "toplevel": {
-          "type": "string",
+          "allOf": [
+            { "$ref": "#/$defs/NixStorePath" }
+          ],
           "description": "Top-level Nix store path of the system closure."
         },
         "initrd": {
-          "type": "string",
+          "allOf": [
+            { "$ref": "#/$defs/NixStorePath" }
+          ],
           "description": "Nix store path to the initrd."
         },
         "initrdSecrets": {
-          "type": "string",
+          "allOf": [
+            { "$ref": "#/$defs/NixStorePath" }
+          ],
           "description": "Nix store path to a tool that dynamically adds secrets to initrd. Consumers of a bootspec document should copy the file referenced by the `initrd` key to a writable location, ensure that the file is writable, invoke this tool with the path to the initrd as its only argument, and use the initrd as modified by the tool for booting. This may be used to add files from outside the Nix store to the initrd. This tool is expected to run on the system whose boot specification is being set up, and may thus fail if used on a system where the expected stateful files are not in place or whose CPU does not support the instruction set of the system to be booted. If this field is present and the tool fails, no boot configuration should be generated for the system."
         }
       }
+    },
+    "NixStorePath": {
+      "type": "string",
+      "description": "A valid Nix store path"
     }
   }
 }
