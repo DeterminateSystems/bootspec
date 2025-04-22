@@ -8,8 +8,10 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: DeterminateSystems/nix-installer-action@main
+      with:
+        determinate: true
     - uses: DeterminateSystems/flakehub-cache-action@main
     - name: Check rustfmt
       run: nix develop --command cargo fmt -- --check
@@ -17,8 +19,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: DeterminateSystems/nix-installer-action@main
+      with:
+        determinate: true
     - uses: DeterminateSystems/flakehub-cache-action@main
     - name: Build
       run: nix build -L
@@ -26,7 +30,7 @@ jobs:
   NixFlakeCheck:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: DeterminateSystems/flake-checker-action@main
       with:
         fail-mode: false
@@ -34,10 +38,12 @@ jobs:
   NixFormatting:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - uses: DeterminateSystems/nix-installer-action@main
+      with:
+        determinate: true
     - uses: DeterminateSystems/flakehub-cache-action@main
     - name: Check nixpkgs-fmt formatting
       run: nix develop --command sh -c "git ls-files '*.nix' | xargs nixpkgs-fmt --check"
@@ -45,15 +51,29 @@ jobs:
   EditorConfig:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: greut/eclint-action@v0
 
+  ValidateJsonSchema:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: DeterminateSystems/nix-installer-action@main
+      with:
+        determinate: true
+    - uses: DeterminateSystems/flakehub-cache-action@main
+    - name: Validate JSON Schema
+      run: nix develop --command jv ./schema.json
+
+
   SynthesizeIntegration:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - uses: DeterminateSystems/nix-installer-action@main
