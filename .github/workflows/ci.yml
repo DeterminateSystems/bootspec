@@ -8,7 +8,7 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: DeterminateSystems/nix-installer-action@main
       with:
         determinate: true
@@ -19,7 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: DeterminateSystems/nix-installer-action@main
       with:
         determinate: true
@@ -30,7 +30,7 @@ jobs:
   NixFlakeCheck:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: DeterminateSystems/flake-checker-action@main
       with:
         fail-mode: false
@@ -38,7 +38,7 @@ jobs:
   NixFormatting:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - uses: DeterminateSystems/nix-installer-action@main
@@ -51,15 +51,60 @@ jobs:
   EditorConfig:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: greut/eclint-action@v0
 
+  ValidateJsonSchema:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: DeterminateSystems/nix-installer-action@main
+      with:
+        determinate: true
+    - uses: DeterminateSystems/flakehub-cache-action@main
+    - name: Validate JSON Schema
+      run: nix develop --command jv ./schema.json
+
+  BuildAndPublishJsonSchemaDocs:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publish.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: DeterminateSystems/nix-installer-action@main
+      with:
+        determinate: true
+    - uses: DeterminateSystems/flakehub-cache-action@main
+    - name: Set up GitHub Pages
+      uses: actions/configure-pages@v5
+    - name: Generate JSON Schema docs
+      id: generate
+      run: |
+        mkdir -p dist
+        nix develop --command generate-schema-doc --config expand_buttons=true schema.json dist/index.html
+    - name: Upload docs
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./dist
+    - name: Publish docs to GitHub Pages
+      id: publish
+      uses: actions/deploy-pages@v4
+
   SynthesizeIntegration:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - uses: DeterminateSystems/nix-installer-action@main

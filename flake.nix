@@ -3,19 +3,15 @@
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-  outputs =
-    { self
-    , nixpkgs
-    , ...
-    } @ inputs:
+  outputs = inputs:
     let
       nameValuePair = name: value: { inherit name value; };
       genAttrs = names: f: builtins.listToAttrs (map (n: nameValuePair n (f n)) names);
-      allSystems = [ "x86_64-linux" "aarch64-linux" "i686-linux" "x86_64-darwin" ];
+      allSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
 
       forAllSystems = f: genAttrs allSystems (system: f {
         inherit system;
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import inputs.nixpkgs { inherit system; };
       });
     in
     {
@@ -30,6 +26,8 @@
             codespell
             nixpkgs-fmt
             rustfmt
+            jsonschema # provides the jv tool
+            json-schema-for-humans # provides the generate-schema-doc tool
           ];
         });
 
@@ -40,12 +38,12 @@
               pname = "bootspec";
               version = "unreleased";
 
-              src = self;
+              src = inputs.self;
 
               cargoLock.lockFile = ./Cargo.lock;
             };
           });
 
-      defaultPackage = forAllSystems ({ system, ... }: self.packages.${system}.package);
+      defaultPackage = forAllSystems ({ system, ... }: inputs.self.packages.${system}.package);
     };
 }

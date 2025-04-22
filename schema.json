@@ -1,0 +1,87 @@
+{
+  "$id": "https://raw.githubusercontent.com/DeterminateSystems/bootspec/v1.0.0/schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NixOS bootspec v1 schema",
+  "description": "Bootspec is a set of memoized facts about a system's closure. The top-level object may contain arbitrary further keys (\"extensions\") whose semantics may be defined by third parties. The use of reverse-domain-name namespacing is recommended in order to avoid name collisions.",
+  "type": "object",
+  "required": ["org.nixos.bootspec.v1"],
+  "properties": {
+    "org.nixos.bootspec.v1": { "$ref": "#/$defs/Bootspec" },
+    "org.nixos.specialisation.v1": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "type": "object",
+          "properties": {
+            "org.nixos.bootspec.v1": { "$ref": "#/$defs/Bootspec" }
+          },
+          "required": ["org.nixos.bootspec.v1"],
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "patternProperties": {
+    "^.*$": {
+      "$ref": "#/$defs/Bootspec",
+      "description": "Testing"
+    }
+  },
+  "$defs": {
+    "Bootspec": {
+      "type": "object",
+      "required": ["init", "kernel", "kernelParams", "label", "system", "toplevel"],
+      "properties": {
+        "init": {
+          "type": "string",
+          "description": "Nix store path to the stage-2 init, executed by initrd (if present)."
+        },
+        "kernel": {
+          "type": "string",
+          "description": "Nix store path to the kernel image."
+        },
+        "kernelParams": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Kernel command line options.",
+          "examples": [
+            [
+            "amd_iommu=on",
+            "amd_iommu=pt",
+            "iommu=pt",
+            "kvm.ignore_msrs=1",
+            "kvm.report_ignored_msrs=0",
+            "udev.log_priority=3",
+            "systemd.unified_cgroup_hierarchy=1",
+            "loglevel=4"
+            ]
+          ]
+        },
+        "label": {
+          "type": "string",
+          "description": "A human-readable label for the system. It should contain the operating system, kernel version,and other user-relevant information to identify the system. This corresponds loosely to `config.system.nixos.label`.",
+          "examples": ["NixOS 21.11.20210810.dirty (Linux 5.15.30)"]
+        },
+        "system": {
+          "type": "string",
+          "description": "Nix system type the bootspec is intended for.",
+          "examples": ["x86_64-linux", "aarch64-linux"]
+        },
+        "toplevel": {
+          "type": "string",
+          "description": "Top-level Nix store path of the system closure."
+        },
+        "initrd": {
+          "type": "string",
+          "description": "Nix store path to the initrd."
+        },
+        "initrdSecrets": {
+          "type": "string",
+          "description": "Nix store path to a tool that dynamically adds secrets to initrd. Consumers of a bootspec document should copy the file referenced by the `initrd` key to a writable location, ensure that the file is writable, invoke this tool with the path to the initrd as its only argument, and use the initrd as modified by the tool for booting. This may be used to add files from outside the Nix store to the initrd. This tool is expected to run on the system whose boot specification is being set up, and may thus fail if used on a system where the expected stateful files are not in place or whose CPU does not support the instruction set of the system to be booted. If this field is present and the tool fails, no boot configuration should be generated for the system."
+        }
+      }
+    }
+  }
+}
