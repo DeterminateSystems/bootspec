@@ -6,14 +6,14 @@
   "type": "object",
   "required": ["org.nixos.bootspec.v1"],
   "properties": {
-    "org.nixos.bootspec.v1": { "$ref": "#/$defs/Bootspec" },
+    "org.nixos.bootspec.v1": { "$ref": "#/$defs/BootspecV1" },
     "org.nixos.specialisation.v1": {
       "type": "object",
       "patternProperties": {
         "^.*$": {
           "type": "object",
           "properties": {
-            "org.nixos.bootspec.v1": { "$ref": "#/$defs/Bootspec" }
+            "org.nixos.bootspec.v1": { "$ref": "#/$defs/BootspecV1" }
           },
           "required": ["org.nixos.bootspec.v1"],
           "additionalProperties": true
@@ -23,12 +23,12 @@
   },
   "patternProperties": {
     "^.*$": {
-      "$ref": "#/$defs/Bootspec",
+      "$ref": "#/$defs/BootspecV1",
       "description": "Testing"
     }
   },
   "$defs": {
-    "Bootspec": {
+    "BootspecV1": {
       "type": "object",
       "required": ["init", "kernel", "kernelParams", "label", "system", "toplevel"],
       "properties": {
