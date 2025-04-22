@@ -69,8 +69,11 @@ jobs:
     - name: Validate JSON Schema
       run: nix develop --command jv ./schema.json
 
-  PublishJsonSchemaDocs:
+  BuildAndPublishJsonSchemaDocs:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publish.outputs.page_url }}
     permissions:
       contents: read
       pages: write
@@ -83,6 +86,8 @@ jobs:
       with:
         determinate: true
     - uses: DeterminateSystems/flakehub-cache-action@main
+    - name: Set up GitHub Pages
+      uses: actions/configure-pages@v5
     - name: Generate JSON Schema docs
       id: generate
       run: |
@@ -93,6 +98,7 @@ jobs:
       with:
         path: ./dist
     - name: Publish docs to GitHub Pages
+      id: publish
       uses: actions/deploy-pages@v4
 
   SynthesizeIntegration:
