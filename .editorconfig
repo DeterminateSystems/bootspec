@@ -15,6 +15,9 @@ indent_size = 2
 [*.rs]
 indent_size = 4
 
+[Cargo.lock]
+indent_size = unset
+
 [*.{diff,patch}]
 end_of_line = unset
 insert_final_newline = unset
