@@ -4,6 +4,7 @@
   "title": "NixOS bootspec v1 schema",
   "description": "Bootspec is a set of memoized facts about a system's closure. The top-level object may contain arbitrary further keys (\"extensions\") whose semantics may be defined by third parties. The use of reverse-domain-name namespacing is recommended in order to avoid name collisions.",
   "type": "object",
+  "required": ["org.nixos.bootspec.v1"],
   "properties": {
     "org.nixos.bootspec.v1": { "$ref": "#/$defs/Bootspec" },
     "org.nixos.specialisation.v1": {
