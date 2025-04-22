@@ -23,8 +23,7 @@
   },
   "patternProperties": {
     "^.*$": {
-      "$ref": "#/$defs/BootspecV1",
-      "description": "Testing"
+      "description": "Additional top-level specialisations"
     }
   },
   "$defs": {
