@@ -69,6 +69,33 @@ jobs:
     - name: Validate JSON Schema
       run: nix develop --command jv ./schema.json
 
+  PublishJsonSchemaDocs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: DeterminateSystems/nix-installer-action@main
+      with:
+        determinate: true
+    - uses: DeterminateSystems/flakehub-cache-action@main
+    - name: Generate JSON Schema docs
+      id: generate
+      run: |
+        mkdir -p dist
+        nix develop --command generate-schema-doc --config expand_buttons=true schema.json dist/index.html
+    - name: Upload docs
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./dist
+    - name: Publish docs to GitHub Pages
+      uses: actions/deploy-pages@v4
+      with:
+        artifact_name: bootspec-json-schema-docs
 
   SynthesizeIntegration:
     runs-on: ubuntu-latest

@@ -31,6 +31,7 @@
             nixpkgs-fmt
             rustfmt
             jsonschema # provides the jv tool
+            json-schema-for-humans # provides the generate-schema-doc tool
           ];
         });
 
