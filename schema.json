@@ -2,7 +2,7 @@
   "$id": "https://raw.githubusercontent.com/DeterminateSystems/bootspec/v1.0.0/schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "NixOS bootspec v1 schema",
-  "description": "TODO",
+  "description": "Bootspec is a set of memoized facts about a system's closure. The top-level object may contain arbitrary further keys (\"extensions\") whose semantics may be defined by third parties. The use of reverse-domain-name namespacing is recommended in order to avoid name collisions.",
   "type": "object",
   "properties": {
     "org.nixos.bootspec.v1": { "$ref": "#/$defs/Bootspec" },
@@ -21,7 +21,10 @@
     }
   },
   "patternProperties": {
-    "^.*$": { "$ref": "#/$defs/Bootspec" }
+    "^.*$": {
+      "$ref": "#/$defs/Bootspec",
+      "description": "Testing"
+    }
   },
   "$defs": {
     "Bootspec": {
