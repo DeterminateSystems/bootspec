@@ -1,19 +1,19 @@
 {
-  "$id": "https://raw.githubusercontent.com/DeterminateSystems/bootspec/v1.0.0/schema.json",
+  "$id": "https://raw.githubusercontent.com/DeterminateSystems/bootspec/main/schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "NixOS bootspec v1 schema",
   "description": "Bootspec is a set of memoized facts about a system's closure. The top-level object may contain arbitrary further keys (\"extensions\") whose semantics may be defined by third parties. The use of reverse-domain-name namespacing is recommended in order to avoid name collisions.",
   "type": "object",
   "required": ["org.nixos.bootspec.v1"],
   "properties": {
-    "org.nixos.bootspec.v1": { "$ref": "#/$defs/Bootspec" },
+    "org.nixos.bootspec.v1": { "$ref": "#/$defs/BootspecV1" },
     "org.nixos.specialisation.v1": {
       "type": "object",
       "patternProperties": {
         "^.*$": {
           "type": "object",
           "properties": {
-            "org.nixos.bootspec.v1": { "$ref": "#/$defs/Bootspec" }
+            "org.nixos.bootspec.v1": { "$ref": "#/$defs/BootspecV1" }
           },
           "required": ["org.nixos.bootspec.v1"],
           "additionalProperties": true
@@ -23,39 +23,40 @@
   },
   "patternProperties": {
     "^.*$": {
-      "$ref": "#/$defs/Bootspec",
-      "description": "Testing"
+      "description": "Additional top-level specialisations"
     }
   },
   "$defs": {
-    "Bootspec": {
+    "BootspecV1": {
       "type": "object",
       "required": ["init", "kernel", "kernelParams", "label", "system", "toplevel"],
       "properties": {
         "init": {
-          "type": "string",
+          "allOf": [
+            { "$ref": "#/$defs/NixStorePath" }
+          ],
           "description": "Nix store path to the stage-2 init, executed by initrd (if present)."
         },
         "kernel": {
-          "type": "string",
+          "allOf": [
+            { "$ref": "#/$defs/NixStorePath" }
+          ],
           "description": "Nix store path to the kernel image."
         },
         "kernelParams": {
           "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Kernel command line options.",
+          "items": { "$ref": "#/$defs/KernelParameter" },
+          "description": "List of kernel parameters",
           "examples": [
             [
-            "amd_iommu=on",
-            "amd_iommu=pt",
-            "iommu=pt",
-            "kvm.ignore_msrs=1",
-            "kvm.report_ignored_msrs=0",
-            "udev.log_priority=3",
-            "systemd.unified_cgroup_hierarchy=1",
-            "loglevel=4"
+              "amd_iommu=on",
+              "amd_iommu=pt",
+              "iommu=pt",
+              "kvm.ignore_msrs=1",
+              "kvm.report_ignored_msrs=0",
+              "udev.log_priority=3",
+              "systemd.unified_cgroup_hierarchy=1",
+              "loglevel=4"
             ]
           ]
         },
@@ -70,18 +71,33 @@
           "examples": ["x86_64-linux", "aarch64-linux"]
         },
         "toplevel": {
-          "type": "string",
+          "allOf": [
+            { "$ref": "#/$defs/NixStorePath" }
+          ],
           "description": "Top-level Nix store path of the system closure."
         },
         "initrd": {
-          "type": "string",
+          "allOf": [
+            { "$ref": "#/$defs/NixStorePath" }
+          ],
           "description": "Nix store path to the initrd."
         },
         "initrdSecrets": {
-          "type": "string",
+          "allOf": [
+            { "$ref": "#/$defs/NixStorePath" }
+          ],
           "description": "Nix store path to a tool that dynamically adds secrets to initrd. Consumers of a bootspec document should copy the file referenced by the `initrd` key to a writable location, ensure that the file is writable, invoke this tool with the path to the initrd as its only argument, and use the initrd as modified by the tool for booting. This may be used to add files from outside the Nix store to the initrd. This tool is expected to run on the system whose boot specification is being set up, and may thus fail if used on a system where the expected stateful files are not in place or whose CPU does not support the instruction set of the system to be booted. If this field is present and the tool fails, no boot configuration should be generated for the system."
         }
       }
+    },
+    "KernelParameter": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9._-]+(=[^\\s=]+)?$",
+      "description": "A kernel parameter in the form key[=value], e.g., loglevel=4 or quiet"
+    },
+    "NixStorePath": {
+      "type": "string",
+      "description": "A valid Nix store path"
     }
   }
 }
