@@ -59,7 +59,7 @@ checksum = "327762f6e5a765692301e5bb513e0d9fef63be86bbc14528052b1cd3e6f03e07"
 
 [[package]]
 name = "bootspec"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -276,7 +276,7 @@ dependencies = [
 
 [[package]]
 name = "synthesize"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bootspec",
  "clap",
@@ -331,7 +331,7 @@ checksum = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a"
 
 [[package]]
 name = "validate"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bootspec",
  "serde_json",
