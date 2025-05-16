@@ -14,10 +14,8 @@ jobs:
         uses: DeterminateSystems/flake-checker-action
         with:
           fail-mode: true
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-        with:
-          determinate: true
+      - name: Install Determinate Nix
+        uses: DeterminateSystems/determinate-nix-action@main
       - name: Enable FlakeHub cache
         uses: DeterminateSystems/flakehub-cache-action@main
       - name: Update flake.lock
