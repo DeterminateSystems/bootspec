@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Check flake
-        uses: DeterminateSystems/flake-checker-action
+        uses: DeterminateSystems/flake-checker-action@main
         with:
           fail-mode: true
       - name: Install Determinate Nix
