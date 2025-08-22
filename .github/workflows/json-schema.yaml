@@ -28,7 +28,7 @@ jobs:
         mkdir -p dist
         nix develop --command generate-schema-doc --config expand_buttons=true schema.json dist/index.html
     - name: Upload docs
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v4
       with:
         path: ./dist
     - name: Publish docs to GitHub Pages
