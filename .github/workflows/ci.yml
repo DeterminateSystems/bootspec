@@ -14,6 +14,15 @@ jobs:
     - name: Check rustfmt
       run: nix develop --command cargo fmt -- --check
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: DeterminateSystems/determinate-nix-action@main
+    - uses: DeterminateSystems/flakehub-cache-action@main
+    - name: Check rustfmt
+      run: nix develop --command cargo test
+
   build:
     runs-on: ubuntu-latest
     steps:
