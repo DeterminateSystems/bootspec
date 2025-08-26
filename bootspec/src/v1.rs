@@ -112,11 +112,7 @@ impl BootSpecV1 {
                 err: e,
             })?;
 
-        let kernel_image_name = match system.as_str() {
-            "x86_64-linux" => "bzImage",
-            _ => "Image",
-        };
-        let kernel_file = generation.join(format!("kernel-modules/{}", kernel_image_name));
+        let kernel_file = generation.join("kernel");
         let kernel =
             fs::canonicalize(kernel_file.clone()).map_err(|e| SynthesizeError::Canonicalize {
                 path: kernel_file,
@@ -212,8 +208,7 @@ mod tests {
         fs::write(generation.join("nixos-version"), system_version)
             .expect("Failed to write to test generation");
         fs::write(generation.join("system"), system).expect("Failed to write system double");
-        fs::write(generation.join("kernel-modules/bzImage"), "")
-            .expect("Failed to write to test generation");
+        fs::write(generation.join("kernel"), "").expect("Failed to write to test generation");
         fs::write(generation.join("kernel-params"), kernel_params.join(" "))
             .expect("Failed to write to test generation");
         fs::write(generation.join("init"), "").expect("Failed to write to test generation");
@@ -293,7 +288,7 @@ mod tests {
             BootSpecV1 {
                 system,
                 label: "NixOS test-version-1 (Linux 1.1.1-test1)".into(),
-                kernel: generation.join("kernel-modules/bzImage"),
+                kernel: generation.join("kernel"),
                 kernel_params,
                 init: generation.join("init"),
                 initrd: Some(generation.join("initrd")),
@@ -362,7 +357,7 @@ mod tests {
             BootSpecV1 {
                 system,
                 label: "NixOS test-version-3 (Linux 1.1.1-test3)".into(),
-                kernel: generation.join("kernel-modules/bzImage"),
+                kernel: generation.join("kernel"),
                 kernel_params,
                 init: generation.join("init"),
                 initrd: Some(generation.join("initrd")),
