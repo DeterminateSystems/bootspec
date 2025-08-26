@@ -227,6 +227,9 @@ mod tests {
     ) -> PathBuf {
         let temp_dir = TempDir::new().expect("Failed to create tempdir for test generation");
         let generation = temp_dir.into_path();
+        let generation = generation
+            .canonicalize()
+            .expect("path should have been able to be canonicalized");
 
         create_generation_files_and_dirs(
             &generation,
