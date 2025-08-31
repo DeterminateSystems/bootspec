@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::error::{BootspecError, SynthesizeError};
-use crate::{Result, SpecialisationName, SystemConfigurationRoot};
+use crate::{BootJson, Result, SpecialisationName, SystemConfigurationRoot};
 
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
@@ -48,7 +48,7 @@ impl GenerationV1 {
 
                 specialisations.insert(
                     SpecialisationName(name.to_string()),
-                    Self::synthesize(&toplevel)?,
+                    BootJson::synthesize_version(&toplevel, SCHEMA_VERSION)?,
                 );
             }
         }
@@ -63,7 +63,7 @@ impl GenerationV1 {
 /// A mapping of V1 bootspec specialisations.
 ///
 /// This structure represents the contents of the `org.nixos.specialisations.v1` key.
-pub type SpecialisationsV1 = HashMap<SpecialisationName, GenerationV1>;
+pub type SpecialisationsV1 = HashMap<SpecialisationName, BootJson>;
 
 /// A V1 bootspec toplevel.
 ///
