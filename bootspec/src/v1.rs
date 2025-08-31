@@ -183,18 +183,18 @@ impl BootSpecV1 {
 #[cfg(test)]
 mod tests {
     use std::fs;
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
 
     use super::{BootSpecV1, SystemConfigurationRoot};
     use crate::JSON_FILENAME;
     use tempfile::TempDir;
 
     fn create_generation_files_and_dirs(
-        generation: &PathBuf,
+        generation: &Path,
         kernel_version: &str,
         system: &str,
         system_version: &str,
-        kernel_params: &Vec<String>,
+        kernel_params: &[String],
     ) {
         fs::create_dir_all(
             generation.join(format!("kernel-modules/lib/modules/{}", kernel_version)),
@@ -221,12 +221,12 @@ mod tests {
         system: &str,
         system_version: &str,
         kernel_version: &str,
-        kernel_params: &Vec<String>,
+        kernel_params: &[String],
         specialisations: Option<Vec<&str>>,
         specialisations_have_boot_spec: bool,
     ) -> PathBuf {
         let temp_dir = TempDir::new().expect("Failed to create tempdir for test generation");
-        let generation = temp_dir.into_path();
+        let generation = temp_dir.keep();
 
         create_generation_files_and_dirs(
             &generation,
