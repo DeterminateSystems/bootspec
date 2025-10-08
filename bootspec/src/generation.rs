@@ -78,7 +78,7 @@ mod tests {
         // have a valid `org.nixos.specialisation.v1`).
         // https://github.com/NixOS/rfcs/blob/02458c2ecc9f915b143b1923213b40be8ac02a96/rfcs/0125-bootspec.md#bootspec-format-v1
         let rfc_json = include_str!("../rfc0125_spec.json");
-        let from_json = serde_json::from_str::<Generation>(&rfc_json).unwrap();
+        let from_json = serde_json::from_str::<Generation>(rfc_json).unwrap();
         assert_eq!(from_json.version(), 1);
 
         let Generation::V1(from_json) = from_json;
@@ -131,14 +131,14 @@ mod tests {
     "org.nixos.specialisation.v1": {}
 }"#;
 
-        let from_json: Generation = serde_json::from_str(&json).unwrap();
+        let from_json: Generation = serde_json::from_str(json).unwrap();
         let Generation::V1(from_json) = from_json;
 
         let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
-            kernel_params: vec![
+            kernel_params: [
                 "amd_iommu=on",
                 "amd_iommu=pt",
                 "iommu=pt",
@@ -192,13 +192,13 @@ mod tests {
     "org.test": { "key": "hello" }
 }"#;
 
-        let from_json: BootJson = serde_json::from_str(&json).unwrap();
+        let from_json: BootJson = serde_json::from_str(json).unwrap();
 
         let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
-            kernel_params: vec![
+            kernel_params: [
                 "amd_iommu=on",
                 "amd_iommu=pt",
                 "iommu=pt",
@@ -269,13 +269,13 @@ mod tests {
     "org.nixos.specialisation.v1": {}
 }"#;
 
-        let from_json: BootJson = serde_json::from_str(&json).unwrap();
+        let from_json: BootJson = serde_json::from_str(json).unwrap();
 
         let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
-            kernel_params: vec![
+            kernel_params: [
                 "amd_iommu=on",
                 "amd_iommu=pt",
                 "iommu=pt",
@@ -333,7 +333,7 @@ mod tests {
     "org.test2": { "hi": null },
     "org.test": null
 }"#;
-        let json_err = serde_json::from_str::<BootJson>(&json).unwrap_err();
+        let json_err = serde_json::from_str::<BootJson>(json).unwrap_err();
         assert!(json_err
             .to_string()
             .contains("org.test was null, but null extensions are not allowed"));
@@ -364,13 +364,13 @@ mod tests {
     "org.nixos.specialisation.v1": {}
 }"#;
 
-        let from_json: BootJson = serde_json::from_str(&json).unwrap();
+        let from_json: BootJson = serde_json::from_str(json).unwrap();
 
         let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
-            kernel_params: vec![
+            kernel_params: [
                 "amd_iommu=on",
                 "amd_iommu=pt",
                 "iommu=pt",
@@ -424,13 +424,13 @@ mod tests {
     }
 }"#;
 
-        let from_json: BootJson = serde_json::from_str(&json).unwrap();
+        let from_json: BootJson = serde_json::from_str(json).unwrap();
 
         let bootspec = BootSpecV1 {
             system: String::from("x86_64-linux"),
             label: String::from("NixOS 21.11.20210810.dirty (Linux 5.15.30)"),
             kernel: PathBuf::from("/nix/store/xxx-linux/bzImage"),
-            kernel_params: vec![
+            kernel_params: [
                 "amd_iommu=on",
                 "amd_iommu=pt",
                 "iommu=pt",
@@ -485,7 +485,7 @@ mod tests {
     "org.nixos.specialisation.v1": null
 }"#;
 
-        let json_err = serde_json::from_str::<GenerationV1>(&json).unwrap_err();
+        let json_err = serde_json::from_str::<GenerationV1>(json).unwrap_err();
         assert!(json_err.to_string().contains("expected a map"));
     }
 
@@ -547,7 +547,7 @@ mod tests {
     "org.nixos.specialisation.v1": {}
 }"#;
 
-        let from_json: BootJson = serde_json::from_str(&json).unwrap();
+        let from_json: BootJson = serde_json::from_str(json).unwrap();
         let _generation: GenerationV1 = from_json.generation.try_into().unwrap();
     }
 }
