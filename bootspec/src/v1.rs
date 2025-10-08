@@ -5,8 +5,9 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use crate::deser;
 use crate::error::{BootspecError, SynthesizeError};
-use crate::{Result, SpecialisationName, SystemConfigurationRoot};
+use crate::{Extensions, Result, SpecialisationName, SystemConfigurationRoot};
 
 /// The V1 bootspec schema version.
 pub const SCHEMA_VERSION: u64 = 1;
@@ -48,7 +49,7 @@ impl GenerationV1 {
 
                 specialisations.insert(
                     SpecialisationName(name.to_string()),
-                    Self::synthesize(&toplevel)?,
+                    SpecialisationV1::synthesize(&toplevel)?,
                 );
             }
         }
@@ -62,8 +63,37 @@ impl GenerationV1 {
 
 /// A mapping of V1 bootspec specialisations.
 ///
-/// This structure represents the contents of the `org.nixos.specialisations.v1` key.
-pub type SpecialisationsV1 = HashMap<SpecialisationName, GenerationV1>;
+/// This structure represents the contents of the `org.nixos.specialisation.v1` key.
+pub type SpecialisationsV1 = HashMap<SpecialisationName, SpecialisationV1>;
+
+/// A V1 bootspec specialisation.
+///
+/// This structure represents a single specialisation contained in the `org.nixos.specialisation.v1` key.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SpecialisationV1 {
+    #[serde(flatten)]
+    pub generation: GenerationV1,
+    #[serde(
+        default = "HashMap::new",
+        skip_serializing_if = "HashMap::is_empty",
+        deserialize_with = "deser::skip_generation_fields",
+        flatten
+    )]
+    pub extensions: Extensions,
+}
+
+impl SpecialisationV1 {
+    /// Synthesize a [`SpecialisationV1`] struct from the path to a NixOS generation.
+    ///
+    /// This is useful when used on generations that do not have a bootspec attached to it.
+    pub fn synthesize(generation_path: &Path) -> Result<Self> {
+        let generation = GenerationV1::synthesize(generation_path)?;
+        Ok(Self {
+            generation,
+            extensions: HashMap::new(),
+        })
+    }
+}
 
 /// A V1 bootspec toplevel.
 ///

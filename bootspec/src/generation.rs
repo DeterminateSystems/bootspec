@@ -88,6 +88,22 @@ mod tests {
             .map(ToOwned::to_owned)
             .collect::<Vec<_>>();
         assert!(keys.contains(&SpecialisationName(String::from("<name>"))));
+
+        assert_eq!(
+            from_json
+                .specialisations
+                .get(&SpecialisationName("<name>".into()))
+                .unwrap()
+                .extensions
+                .get("org.nix-community.test")
+                .unwrap()
+                .as_object()
+                .unwrap()
+                .get("foo")
+                .unwrap()
+                .as_str(),
+            Some("bar")
+        )
     }
 
     #[test]
