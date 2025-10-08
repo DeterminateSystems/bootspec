@@ -34,11 +34,13 @@ pub const JSON_FILENAME: &str = "boot.json";
 /// The type for a collection of generic extensions.
 pub type Extensions = HashMap<String, serde_json::Value>;
 
-// !!! IMPORTANT: KEEP `BootSpec`, `Specialisations`, and `SCHEMA_VERSION` IN SYNC !!!
+// !!! IMPORTANT: KEEP `BootSpec`, `Specialisations`, `Specialisation`, and `SCHEMA_VERSION` IN SYNC !!!
 /// The current bootspec generation type.
 pub type BootSpec = v1::GenerationV1;
 /// The current specialisations type.
 pub type Specialisations = v1::SpecialisationsV1;
+/// The current specialisations type.
+pub type Specialisation = v1::SpecialisationV1;
 /// The current bootspec schema version.
 pub const SCHEMA_VERSION: u64 = v1::SCHEMA_VERSION;
 

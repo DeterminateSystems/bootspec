@@ -20,6 +20,9 @@
   },
   "org.nixos.specialisation.v1": {
     "<name>": {
+      "org.nix-community.test": {
+        "foo": "bar"
+      },
       "org.nixos.bootspec.v1": {
         "system": "x86_64-linux",
         "init": "/nix/store/xxx-nixos-system-xxx/init",
