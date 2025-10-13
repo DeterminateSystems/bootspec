@@ -1,6 +1,6 @@
 [package]
 name = "bootspec"
-version = "1.1.0"
+version = "2.0.0"
 edition = "2021"
 description = "An implementation of NixOS RFC 125's bootspec datatype"
 license = "MIT"
