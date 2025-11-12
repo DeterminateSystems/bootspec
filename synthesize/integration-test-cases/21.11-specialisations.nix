@@ -8,11 +8,14 @@ in
   configuration = {
     imports = [
       "${src}/nixos/modules/virtualisation/qemu-vm.nix"
-      ({ pkgs, ... }: {
-        specialisation.example.configuration = {
-          environment.systemPackages = [ pkgs.hello ];
-        };
-      })
+      (
+        { pkgs, ... }:
+        {
+          specialisation.example.configuration = {
+            environment.systemPackages = [ pkgs.hello ];
+          };
+        }
+      )
     ];
   };
 }).config.system.build.toplevel
