@@ -39,10 +39,10 @@
               rustc
               clippy
               codespell
-              nixpkgs-fmt
               rustfmt
               jsonschema # provides the jv tool
               json-schema-for-humans # provides the generate-schema-doc tool
+              self.formatter.${system}
             ];
           };
         }
@@ -62,5 +62,7 @@
           };
         }
       );
+
+      formatter = forEachSupportedSystem ({ pkgs, ... }: pkgs.nixfmt);
     };
 }
