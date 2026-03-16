@@ -1,7 +1,10 @@
 {
-  description = "bootloader-experimentation";
+  description = "Bootspec: an implementation of RFC-0125's data type and synthesis tooling";
 
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1";
+  };
 
   outputs =
     { self, ... }@inputs:
@@ -11,7 +14,6 @@
       supportedSystems = [
         "x86_64-linux"
         "aarch64-linux"
-        "x86_64-darwin"
         "aarch64-darwin"
       ];
 
@@ -26,33 +28,35 @@
         );
     in
     {
-      devShell = forEachSupportedSystem (
-        { system, pkgs }:
-        pkgs.mkShell {
-          name = "bootspec";
+      devShells = forEachSupportedSystem (
+        { pkgs, system }:
+        {
+          default = pkgs.mkShell {
+            name = "bootspec";
 
-          packages = with pkgs; [
-            cargo
-            rustc
-            clippy
-            codespell
-            nixpkgs-fmt
-            rustfmt
-            jsonschema # provides the jv tool
-            json-schema-for-humans # provides the generate-schema-doc tool
-          ];
+            packages = with pkgs; [
+              cargo
+              rustc
+              clippy
+              codespell
+              nixpkgs-fmt
+              rustfmt
+              jsonschema # provides the jv tool
+              json-schema-for-humans # provides the generate-schema-doc tool
+            ];
+          };
         }
       );
 
       packages = forEachSupportedSystem (
-        { system, pkgs }:
+        { pkgs, system }:
         {
           default = self.packages.${system}.bootspec;
-          bootspec = pkgs.rustPlatform.buildRustPackage rec {
+          bootspec = pkgs.rustPlatform.buildRustPackage {
             pname = "bootspec";
             version = "unreleased";
 
-            src = inputs.self;
+            src = self;
 
             cargoLock.lockFile = ./Cargo.lock;
           };
