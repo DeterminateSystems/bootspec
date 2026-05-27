@@ -8,44 +8,44 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
-    - uses: DeterminateSystems/determinate-nix-action@main
-    - uses: DeterminateSystems/flakehub-cache-action@main
-    - name: Check rustfmt
-      run: nix develop --command cargo fmt -- --check
+      - uses: actions/checkout@v6
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+      - name: Check rustfmt
+        run: nix develop --command cargo fmt -- --check
 
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
-    - uses: DeterminateSystems/determinate-nix-action@main
-    - uses: DeterminateSystems/flakehub-cache-action@main
-    - name: Build
-      run: nix build -L
+      - uses: actions/checkout@v6
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+      - name: Build
+        run: nix build -L
 
   NixFlakeCheck:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
-    - uses: DeterminateSystems/flake-checker-action@main
-      with:
-        fail-mode: false
+      - uses: actions/checkout@v6
+      - uses: DeterminateSystems/flake-checker-action@main
+        with:
+          fail-mode: false
 
   NixFormatting:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-    - uses: DeterminateSystems/determinate-nix-action@main
-    - uses: DeterminateSystems/flakehub-cache-action@main
-    - name: Check nixpkgs-fmt formatting
-      run: nix develop --command sh -c "git ls-files '*.nix' | xargs nixpkgs-fmt --check"
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+      - name: Check Nix formatting
+        run: nix develop --command sh -c "git ls-files '*.nix' | xargs nixfmt check"
 
   EditorConfig:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: greut/eclint-action@v0
@@ -53,23 +53,23 @@ jobs:
   ValidateJsonSchema:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-    - uses: DeterminateSystems/determinate-nix-action@main
-    - uses: DeterminateSystems/flakehub-cache-action@main
-    - name: Validate JSON Schema
-      run: nix develop --command jv ./schema.json
-    - name: Validate JSON Schema against example
-      run: nix develop --command jv ./schema.json ./bootspec/rfc0125_spec.json
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+      - name: Validate JSON Schema
+        run: nix develop --command jv ./schema.json
+      - name: Validate JSON Schema against example
+        run: nix develop --command jv ./schema.json ./bootspec/rfc0125_spec.json
 
   SynthesizeIntegration:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-    - uses: DeterminateSystems/determinate-nix-action@main
-    - uses: DeterminateSystems/flakehub-cache-action@main
-    - name: Verify synthesize integration test still passes
-      run: nix develop -c ./synthesize/integration-test-cases/verify.sh
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+      - name: Verify synthesize integration test still passes
+        run: nix develop -c ./synthesize/integration-test-cases/verify.sh

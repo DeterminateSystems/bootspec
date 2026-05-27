@@ -1,49 +1,68 @@
 {
-  description = "bootloader-experimentation";
+  description = "Bootspec: an implementation of RFC-0125's data type and synthesis tooling";
 
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1";
+  };
 
-  outputs = inputs:
+  outputs =
+    { self, ... }@inputs:
     let
-      nameValuePair = name: value: { inherit name value; };
-      genAttrs = names: f: builtins.listToAttrs (map (n: nameValuePair n (f n)) names);
-      allSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+      inherit (inputs.nixpkgs) lib;
 
-      forAllSystems = f: genAttrs allSystems (system: f {
-        inherit system;
-        pkgs = import inputs.nixpkgs { inherit system; };
-      });
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
+
+      forEachSupportedSystem =
+        f:
+        lib.genAttrs supportedSystems (
+          system:
+          f {
+            inherit system;
+            pkgs = import inputs.nixpkgs { inherit system; };
+          }
+        );
     in
     {
-      devShell = forAllSystems ({ system, pkgs, ... }:
-        pkgs.mkShell {
-          name = "bootspec";
+      devShells = forEachSupportedSystem (
+        { pkgs, system }:
+        {
+          default = pkgs.mkShell {
+            name = "bootspec";
 
-          buildInputs = with pkgs; [
-            cargo
-            rustc
-            clippy
-            codespell
-            nixpkgs-fmt
-            rustfmt
-            jsonschema # provides the jv tool
-            json-schema-for-humans # provides the generate-schema-doc tool
-          ];
-        });
+            packages = with pkgs; [
+              cargo
+              rustc
+              clippy
+              codespell
+              rustfmt
+              jsonschema # provides the jv tool
+              json-schema-for-humans # provides the generate-schema-doc tool
+              self.formatter.${system}
+            ];
+          };
+        }
+      );
 
-      packages = forAllSystems
-        ({ system, pkgs, ... }:
-          {
-            package = pkgs.rustPlatform.buildRustPackage rec {
-              pname = "bootspec";
-              version = "unreleased";
+      packages = forEachSupportedSystem (
+        { pkgs, system }:
+        {
+          default = self.packages.${system}.bootspec;
+          bootspec = pkgs.rustPlatform.buildRustPackage {
+            pname = "bootspec";
+            version = "unreleased";
 
-              src = inputs.self;
+            src = self;
 
-              cargoLock.lockFile = ./Cargo.lock;
-            };
-          });
+            cargoLock.lockFile = ./Cargo.lock;
+          };
+        }
+      );
 
-      defaultPackage = forAllSystems ({ system, ... }: inputs.self.packages.${system}.package);
+      formatter = forEachSupportedSystem ({ pkgs, ... }: pkgs.nixfmt);
     };
 }
